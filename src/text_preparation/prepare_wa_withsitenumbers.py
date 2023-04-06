@@ -1,8 +1,13 @@
 # Python script to prepare Luther's Werke im WWW text to form usable in NLP
+# Stage 1: Prepare the text 
+# Removes any square brackets [] and their contents, except for page and verse numbers 
 # (c) Benjam Bröijer, licensed under the MIT License
 import os
 import re
 
+# Define the source and destination file names and paths
+# Target text to projectfolder/txt/target_txt
+# Output text to projectfolder/txt/output_txt
 script_path = os.path.dirname(os.path.abspath(__file__))
 source_path = os.path.join(script_path, '../txt/dsa.txt')
 destination_path = os.path.join(script_path, '../output/dsa_modified.txt')
@@ -20,6 +25,9 @@ def process_match(match):
 
 # Remove square brackets and their content (except for page and verse numbers)
 sourcetext = re.sub('\[[^\]]*?\]', process_match, sourcetext)
+
+# Remove WA notes from the text
+sourcetext = re.sub('Anmerkung ansehen \/ view note', '', sourcetext)
 
 # Preprocess the text by removing newlines and extra whitespace
 sourcetext = re.sub('\n+', ' ', sourcetext)
