@@ -1,5 +1,8 @@
 import stanza
 
+__author__ = "benjamsf"
+__license__ = "MIT"
+
 def download_stanza_model():
     print("Downloading Stanza model for Latin...")
     stanza.download('la')

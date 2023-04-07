@@ -1,11 +1,13 @@
 # Python script to prepare Latin text from UTF-8 textfile to form usable in NLP
-# Stage 2b, tokenize prepared text by sentences
-# (c) Benjam Bröijer, licensed under the MIT License
+
+__author__ = "benjamsf"
+__license__ = "MIT"
 
 import os
 import re
 from cltk import NLP
 from tqdm import tqdm
+import argparse
 
 # Instantiate a Latin-specific NLP object
 cltk_nlp = NLP(language="lat")

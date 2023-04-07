@@ -1,6 +1,9 @@
 import os
 import urllib.request
 
+__author__ = "benjamsf"
+__license__ = "MIT"
+
 def download_fasttext_model():
     print("Downloading Fasttext model for Latin...")
 

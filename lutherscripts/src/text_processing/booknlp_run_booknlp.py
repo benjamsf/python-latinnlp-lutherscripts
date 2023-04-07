@@ -1,5 +1,8 @@
 from booknlp.booknlp import BookNLP
 
+__author__ = "benjamsf"
+__license__ = "MIT"
+
 model_params={
 		"pipeline":"entity,quote,supersense,event,coref", 
 		"model":"big"

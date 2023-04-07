@@ -1,7 +1,9 @@
 # Python script to prepare Luther's Werke im WWW text to form usable in NLP
-# Stage 1: Prepare the text 
 # Removes any square brackets [] and their contents, except for page and verse numbers 
-# (c) Benjam Bröijer, licensed under the MIT License
+
+__author__ = "benjamsf"
+__license__ = "MIT"
+
 import os
 import re
 

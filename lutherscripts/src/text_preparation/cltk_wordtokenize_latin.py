@@ -1,6 +1,6 @@
 # Python script to prepare Luther's Werke im WWW text to form usable in NLP
-# Stage 2, tokenize prepared text
-# (c) Benjam Bröijer, licensed under the MIT License
+__author__ = "benjamsf"
+__license__ = "MIT"
 
 import os
 import string

@@ -3,13 +3,13 @@
 *.DS
 
 # Sourcetext
-txt/*txt
+lutherscripts/txt/*txt
 
 # Output text
-output/*.txt
+lutherscripts/output/*.txt
 
 # Output
-output/*.pkl
+lutherscripts/output/*.pkl
 
 # Prerequisites
 *.d
