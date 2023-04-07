@@ -1,1 +1,1 @@
-Output text will appear here in UTF-8, format .txt.
+Output text will appear here in UTF-8, format .txt or .pkl.

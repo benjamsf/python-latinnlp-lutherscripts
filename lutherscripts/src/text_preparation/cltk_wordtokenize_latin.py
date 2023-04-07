@@ -12,8 +12,8 @@ cltk_nlp = NLP(language="lat")
 
 # Define the source and destination file names and paths
 script_path = os.path.dirname(os.path.abspath(__file__))
-source_path = os.path.join(script_path, '../../output/dsa_prepared_2.txt')
-destination_path = os.path.join(script_path, '../../output/dsa_tokenized2.pkl')
+source_path = os.path.join(script_path, '../../output/dsa_prepared_1.txt')
+destination_path = os.path.join(script_path, '../../output/dsa_tokenized.pkl')
 
 # Load the Latin text from the source file
 with open(source_path, 'r', encoding='utf-8') as f:
