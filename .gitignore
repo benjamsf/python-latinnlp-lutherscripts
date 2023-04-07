@@ -3,7 +3,7 @@
 *.DS
 
 # Sourcetext
-lutherscripts/txt/*txt
+lutherscripts/txt/*.txt
 
 # Output text
 lutherscripts/output/*.txt
