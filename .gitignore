@@ -3,7 +3,13 @@
 *.DS
 
 # Sourcetext
-*.txt
+txt/*txt
+
+# Output text
+output/*.txt
+
+# Output
+output/*.pkl
 
 # Prerequisites
 *.d
