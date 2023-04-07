@@ -7,8 +7,8 @@ with open("requirements.txt") as f:
 
 # Install Stanza NLP models required by the scripts
 if "install" in sys.argv or "develop" in sys.argv:
-    os.system("python latin_nlp/src/install/install_stanza_model.py")
-    os.system("python latin_nlp/src/install/install_fasttext_model.py")
+    os.system("python latinnlp/src/install/install_stanza_model.py")
+    os.system("python latinnlp/src/install/install_fasttext_model.py")
 
 setup(
     name="latin-nlp",
