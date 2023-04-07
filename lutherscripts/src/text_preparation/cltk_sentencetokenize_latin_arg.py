@@ -17,7 +17,6 @@ def main(source_path, destination_path):
 
     with open(input_file, 'r', encoding='utf-8') as f:
         input_text = f.read()
-        logging.info(f"Input file contents:\n{input_text}")
 
     # Split the input text into smaller chunks based on punctuation
     chunk_delimiters = r'[.!?]+'
