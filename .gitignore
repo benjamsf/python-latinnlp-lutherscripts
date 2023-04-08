@@ -2,6 +2,10 @@
 *.DS_Store
 *.DS
 
+#builds
+build/*
+lutherscripts.egg-info/*
+
 # Sourcetext
 lutherscripts/txt/*.txt
 

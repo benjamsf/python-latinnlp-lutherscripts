@@ -1,3 +1,0 @@
-[console_scripts]
-lutherscripts = lutherscripts.gui:gui_main
-lutherscripts-cli = lutherscripts.cli:cli_main
