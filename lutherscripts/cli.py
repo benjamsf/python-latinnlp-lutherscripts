@@ -1,9 +1,15 @@
 import argparse
 import os
 import subprocess
+import sys
+from pathlib import Path
 
 __author__ = "benjamsf"
 __license__ = "MIT"
+
+# Add the parent directory of this file to the system path
+file_path = Path(__file__).resolve()
+sys.path.append(str(file_path.parent))
 
 
 def add_arguments(parser):

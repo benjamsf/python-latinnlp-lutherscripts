@@ -18,6 +18,7 @@ setup(
     author_email="benjam.broijer@roadsign.fi",
     url="https://github.com/benjamsf/python-latinnlp-scripts",  # Replace with your repository URL if available
     packages=find_packages(),
+    package_data={"lutherscripts": ["luther.gif"]},
     install_requires=requirements,
     classifiers=[
         "Intended Audience :: Developers",
@@ -27,10 +28,10 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     entry_points={
-    "console_scripts": [
-        "lutherscript = lutherscripts.cli:cli_main",
-        "lutherscript-gui = lutherscripts.gui:gui_main",
-    ],
+        'console_scripts': [
+            'lutherscripts = lutherscripts.gui:gui_main',
+            'lutherscripts-cli = lutherscripts.cli:cli_main',
+        ],
     },
 )
 

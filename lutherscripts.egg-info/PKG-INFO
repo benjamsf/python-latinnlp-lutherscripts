@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: lutherscripts
+Version: 0.1.0
+Summary: Collection of NLP scripts to analyze your UTF-8 Latin text from a textfile
+Home-page: https://github.com/benjamsf/python-latinnlp-scripts
+Author: Benjam Bröijer
+Author-email: benjam.broijer@roadsign.fi
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Religion
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+License-File: LICENSE
