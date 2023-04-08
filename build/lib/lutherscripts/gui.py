@@ -95,13 +95,20 @@ def gui_main():
     lbl_explanation.pack(side=tk.LEFT, padx=10, pady=10)
 
     def run_script():
-        global location_raw_sourcetext, location_output_file
+        global location_raw_sourcetext, location_output
         operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
-        cli_command = ['lutherscripts-cli', '-o', operation_name, '-s', os.path.abspath(location_raw_sourcetext), '-d', os.path.abspath(location_output)]
-        output = subprocess.check_output(cli_command, encoding='utf-8', stderr=subprocess.STDOUT)
+        source_path = os.path.normpath(location_raw_sourcetext)
+        destination_path = os.path.normpath(location_output)
+        cli_command = ['lutherscripts-cli', '-o', operation_name, '-s', source_path, '-d', destination_path]
+        process = subprocess.Popen(cli_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         txt_terminal.delete(1.0, tk.END)
-        txt_terminal.insert(tk.END, output)
-
+        while True:
+            output = process.stdout.readline().decode('utf-8')
+            if output == '' and process.poll() is not None:
+                break
+            txt_terminal.insert(tk.END, output)
+            txt_terminal.see(tk.END)
+        returncode = process.poll()
 
 
     btn_play = tk.Button(tab2, text="Play!", command=run_script)

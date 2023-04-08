@@ -60,3 +60,4 @@ def main(source_path, destination_path):
 
     # Return the output as a string
     return buffer.getvalue()
+
