@@ -2,11 +2,12 @@ import argparse
 import os
 import subprocess
 
-def add_arguments_sentencetokenize(parser):
-    parser.add_argument("-s", "--source-path", type=str, required=True, help="The path to the source text file")
-    parser.add_argument("-d", "--destination-path", type=str, required=True, help="The path to the output file")
+__author__ = "benjamsf"
+__license__ = "MIT"
 
-def add_arguments_wordtokenize(parser):
+
+def add_arguments(parser):
+    parser.add_argument("-o", "--operation", type=str, choices=["word_tokenize_latin", "sent_tokenize_latin"], required=True, help="Choose operation: word_tokenize_latin or sent_tokenize_latin")
     parser.add_argument("-s", "--source-path", type=str, required=True, help="The path to the source text file")
     parser.add_argument("-d", "--destination-path", type=str, required=True, help="The path to the output file")
 
@@ -20,32 +21,20 @@ def word_tokenize_latin(source_path, destination_path):
     output = cltk_wordtokenize_latin(source_path, destination_path)
     print(output)
 
-
-def main():
+def cli_main():
     parser = argparse.ArgumentParser(description="NLP script launcher")
-
-    subparsers = parser.add_subparsers(dest='subparser_name')
-
-    sent_tokenize_parser = subparsers.add_parser('sent_tokenize_latin', help='Tokenize Latin text into sentences')
-    add_arguments_sentencetokenize(sent_tokenize_parser)
-
-    word_tokenize_parser = subparsers.add_parser('word_tokenize_latin', help='Tokenize Latin text into words')
-    add_arguments_wordtokenize(word_tokenize_parser)
-
+    add_arguments(parser)
     args = parser.parse_args()
 
-    if args.subparser_name == 'sent_tokenize_latin':
-        sentence_tokenize_latin(args.source_path, args.destination_path)
-    elif args.subparser_name == 'word_tokenize_latin':
-        word_tokenize_latin(args.source_path, args.destination_path)
+    source_path = os.path.abspath(args.source_path)
+    destination_path = os.path.abspath(args.destination_path)
 
-    return args
+    if args.operation == 'sent_tokenize_latin':
+        sentence_tokenize_latin(source_path, destination_path)
+    elif args.operation == 'word_tokenize_latin':
+        word_tokenize_latin(source_path, destination_path)
 
 if __name__ == '__main__':
-    args = main()
-    if args.subparser_name == 'word_tokenize_latin':
-        word_tokenize_latin(args.source_path, args.destination_path)
-    elif args.subparser_name == 'sent_tokenize_latin':
-        sentence_tokenize_latin(args.source_path, args.destination_path)
+    cli_main()
 
-        print(output)
+

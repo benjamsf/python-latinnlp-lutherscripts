@@ -26,4 +26,11 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
     ],
+    entry_points={
+    "console_scripts": [
+        "lutherscript = lutherscripts.cli:cli_main",
+        "lutherscript-gui = lutherscripts.gui:gui_main",
+    ],
+    },
+)
 )

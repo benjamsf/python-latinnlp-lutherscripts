@@ -5,6 +5,10 @@ from cltk import NLP
 from tqdm import tqdm
 import logging
 
+__author__ = "benjamsf"
+__license__ = "MIT"
+
+
 def main(source_path, destination_path):
     # Instantiate a Latin-specific NLP object
     cltk_nlp = NLP(language="lat")
