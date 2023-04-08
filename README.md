@@ -10,3 +10,22 @@ I noticed that while the tools to do the actual hard work are present and availa
 
 ## How
 I update the documentation as I grow the tools. By now there are capabilities to prepare text from Luther's Werke im WWW, and to tokenize words. I intend to make this library easy to install and use.
+
+## As per development version 0.2.0
+
+### Features
+- Word tokenization from Latin source text
+- Sentence tokenization from Latin source text
+- Working CLI, working but WIP GUI
+
+### Operation instructions
+1. install via pip install python-latinnlp-lutherscripts/
+2a. In Windows, navigate powershell to the main directory and run 'run_lutherscripts.bat'
+2b. In linux, run 'lutherscripts'
+3. CLI: lutherscripts-cli -o word_tokenize_latin/sent_tokenize_latin -s (source file relative path) -d (destination file relative path)
+
+### TODO:
+- Call Luther's Werke im WWW -related text preparation functions from cli and gui
+- Call Keyword in Context (KWIC) analysis from cli and gui
+- Call couple of else NLP tools from cli and gui
+- Make gui look sane and usable
