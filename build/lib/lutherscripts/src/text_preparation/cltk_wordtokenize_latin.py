@@ -7,6 +7,7 @@ import string
 from cltk import NLP
 from tqdm import tqdm
 
+
 # Instantiate a Latin-specific NLP object
 cltk_nlp = NLP(language="lat")
 

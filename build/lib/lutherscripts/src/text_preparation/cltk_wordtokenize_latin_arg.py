@@ -18,10 +18,11 @@ def main(source_path, destination_path):
     # Instantiate a Latin-specific NLP object
     cltk_nlp = NLP(language="lat")
 
+
     input_file = os.path.abspath(source_path)
 
     # Load the Latin text from the source file
-    with open(input_file, 'r', encoding='utf-8-sig') as f:
+    with open(input_file, 'r', encoding='utf-8') as f:
         input_text = f.read()
 
     # Remove punctuation marks from the input text

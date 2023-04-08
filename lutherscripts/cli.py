@@ -20,12 +20,12 @@ def add_arguments(parser):
 def sentence_tokenize_latin(source_path, destination_path):
     from src.text_preparation.cltk_sentencetokenize_latin_arg import main as cltk_sentencetokenize_latin
     output = cltk_sentencetokenize_latin(source_path, destination_path)
-    print(output)
+    print(output.encode('utf-8'))
 
 def word_tokenize_latin(source_path, destination_path):
     from src.text_preparation.cltk_wordtokenize_latin_arg import main as cltk_wordtokenize_latin
     output = cltk_wordtokenize_latin(source_path, destination_path)
-    print(output)
+    print(output.encode('utf-8'))
 
 def cli_main():
     parser = argparse.ArgumentParser(description="NLP script launcher")
