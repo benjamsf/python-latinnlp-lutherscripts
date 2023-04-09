@@ -9,6 +9,8 @@ import pkg_resources
 from pathlib import Path
 import logging
 import queue
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
 
 
 __author__ = "benjamsf"
@@ -146,36 +148,32 @@ def gui_main():
         output_file_label.set(location_output)
         print(f"Output file selected: {location_output}")
 
-    def check_output(output_event):
-        while not output_event.is_set():
-            txt_terminal.see(tk.END)  # scroll to end of text widget
-            output_event.clear()
-
+    txt_terminal = tk.Text(root, height=20, width=1000)
+    txt_terminal.configure(state='normal')  # Add this line to enable the state of the txt_terminal widget
+    txt_terminal.grid(row=4, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
+    root.grid_columnconfigure(1, weight=1)
+    root.grid_rowconfigure(4, weight=1)
+    sys.stdout = CustomTextRedirector(txt_terminal)
+    sys.stderr = CustomTextRedirector(txt_terminal)
     
-    output_event = asyncio.Event()
-    check_output(output_event)
 
-    def run_script(output_event):
-        global location_raw_sourcetext, location_output
+    #def run_script():
+    #    global location_raw_sourcetext, location_output
+    #    operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
+    #    source_path = os.path.normpath(location_raw_sourcetext)
+    #    destination_path = os.path.normpath(location_output)
+    #    cli_command = ['lutherscripts-cli', '-o', operation_name, '-s', source_path, '-d', destination_path]
+
+        # Run the run_script_async coroutine using the default event loop
+     #   loop = asyncio.get_event_loop()
+      #  loop.run_until_complete(run_script_async(cli_command))
+
+
+    async def run_script_async():
         operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
         source_path = os.path.normpath(location_raw_sourcetext)
         destination_path = os.path.normpath(location_output)
         cli_command = ['lutherscripts-cli', '-o', operation_name, '-s', source_path, '-d', destination_path]
-
-        # Create a new event loop and run it
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(run_script_async(cli_command, output_event))
-
-        # Start the output checking loop
-        check_output(output_event)
-
-    async def run_script_async(cli_command, output_queue):
-        operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
-        source_path = os.path.normpath(location_raw_sourcetext)
-        destination_path = os.path.normpath(location_output)
-
-        loop = asyncio.get_event_loop()
 
         process = await asyncio.create_subprocess_exec(
             *cli_command,
@@ -187,45 +185,50 @@ def gui_main():
             output = await process.stdout.readline()
             if not output:
                 break
+            txt_terminal.configure(state='normal')
             txt_terminal.insert(tk.END, output.decode())
-            output_queue.put(True)  # signal that new output is available
+            txt_terminal.see(tk.END)
+            txt_terminal.configure(state='disabled')
+            txt_terminal.update()
 
         stderr_data = await process.stderr.read()
         if stderr_data:
+            txt_terminal.configure(state='normal')
             txt_terminal.insert(tk.END, stderr_data.decode())
-            output_queue.put(True)  # signal that new output is available
+            txt_terminal.see(tk.END)
+            txt_terminal.configure(state='disabled')
+            txt_terminal.update()
 
+    
+    def start_operation():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(run_script_async())
+        loop.close()
 
-    # Schedule the check_output function to run again after 100 milliseconds
-    output_event = asyncio.Event()
-    txt_terminal.after(100, check_output, output_event)
-
-    # Call the check_output function once to start the loop
-    check_output(output_event)
-
-    # Redirect standard output and error to the terminal widget
-    txt_terminal = tk.Text(root, height=20, width=1000)
-    txt_terminal.configure(state='normal')  # Add this line to enable the state of the txt_terminal widget
-    txt_terminal.grid(row=4, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
-    root.grid_columnconfigure(1, weight=1)
-    root.grid_rowconfigure(4, weight=1)
-    sys.stdout = CustomTextRedirector(txt_terminal)
-    sys.stderr = CustomTextRedirector(txt_terminal)
 
     # Start Operation! button
-    btn_play = tk.Button(root, text="Start Operation!", command=run_script)
+    btn_play = tk.Button(root, text="Start Operation!", command=start_operation)
     btn_play.grid(row=3, column=3, padx=10, pady=10)
 
     # Print a welcome message to the terminal
     print("Welcome to Lutherscripts!")
     print("Development version")
 
+    # Print a message before redirecting stdout and stderr
+    print("Starting GUI...")
+
+    sys.stdout = CustomTextRedirector(txt_terminal)
+    sys.stderr = CustomTextRedirector(txt_terminal)
+
     # Start the GUI
+    print("Before mainloop")
     root.mainloop()
+    print("After mainloop")
+
 
 if __name__ == '__main__':
     gui_main()
-
 
 
 
