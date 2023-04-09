@@ -35,6 +35,11 @@ def kwic_analysis(keyword, context_size, source_path, destination_path):
     output = nltk_do_kwic_analysis(keyword, context_size, source_path, destination_path)
     print(output.encode('utf-8'))
 
+def freq_analysis(source_path, destination_path)
+    from src.text_processing.nltk_do_freqanalysis import main as nltk_do_freqanalysis)
+    output = nltk_do_freqanalysis(source_path, destination_path)
+    print(output.encode('utf-8'))
+
 def cli_main():
     parser = argparse.ArgumentParser(description="Lutherscript operations launcher")
     add_arguments(parser)
@@ -52,6 +57,8 @@ def cli_main():
             print("Both -1 and -2 flags must be provided for the KWIC operation.")
         else:
             kwic_analysis(args.first_detail, args.second_detail, source_path, destination_path)
+    elif args.operation == 'freq-analysis'
+        freq_analysis(source_path, destination_path)
 
 if __name__ == '__main__':
     cli_main()
