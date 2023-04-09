@@ -5,10 +5,8 @@ from nltk.probability import FreqDist
 from collections import OrderedDict
 from tqdm import tqdm
 
-__author__ = "benjamsf"
-__license__ = "MIT"
 
-def main(source_path, destination_path):
+def main(source_path, destination_path, progress_callback=None):
     # Load the tokenized text from the source file
     with open(source_path, 'r', encoding='utf-8') as f:
         tokenized_text = json.load(f)
@@ -17,6 +15,8 @@ def main(source_path, destination_path):
     fdist = FreqDist()
     for token in tqdm(tokenized_text, desc="Creating frequency distribution", unit="token"):
         fdist[token] += 1
+        if progress_callback:
+            progress_callback(fdist.N() / len(tokenized_text))
 
     # Sort the frequency distribution by frequency
     sorted_fdist = OrderedDict(fdist.most_common())
@@ -27,4 +27,5 @@ def main(source_path, destination_path):
 
     # Print a message to confirm that the file has been saved
     print(f'The frequency analysis has been saved as {destination_path}')
+
 

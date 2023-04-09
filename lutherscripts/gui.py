@@ -38,7 +38,7 @@ class CustomTextRedirector:
 
 def create_image_label(parent, root, frames):
     lbl_luther_image = tk.Label(parent, image=frames[0])
-    lbl_luther_image.grid(row=0, rowspan=5, column=0, padx=10, pady=10)
+    lbl_luther_image.grid(row=0, rowspan=6, column=0, padx=10, pady=10)
 
     def update_image():
         nonlocal ind
@@ -102,14 +102,24 @@ def gui_main():
     lbl_selected_output_file = tk.Label(root, textvariable=output_file_label)
     lbl_selected_output_file.grid(row=1, column=3, padx=10, pady=10)
 
+        # Entry field for argument 1
+    lbl_argument1 = tk.Label(root, text="Argument 1 and 2:")
+    lbl_argument1.grid(row=2, column=1, padx=4, pady=4)
+    ent_argument1 = tk.Entry(root, width=10)
+    ent_argument1.grid(row=2, column=2, padx=4, pady=4)
+    ent_argument2 = tk.Entry(root, width=10)
+    ent_argument2.grid(row=2, column=3, padx=4, pady=4)
+
+
     # Choose Operation
     lbl_operation = tk.Label(root, text="Choose Operation:")
-    lbl_operation.grid(row=2, column=1, padx=10, pady=10)
+    lbl_operation.grid(row=4, column=1, padx=10, pady=10)
 
     options = [
         ("word_tokenize_latin", "Tokenize Latin text by words"),        
         ("sent_tokenize_latin", "Tokenize Latin text by sentences"),        
-        ("nltk_do_kwic", "Perform KWIC analysis"),    
+        ("kwic_analysis", "Perform KWIC analysis"),
+        ("freq_analysis", "Perform word frequency analysis")    
         ]
 
     def update_explanation(*args):
@@ -117,6 +127,7 @@ def gui_main():
             "Tokenize Latin text by words": "This operation will tokenize your Latin text by words, which is required for further word-based natural language processing.",
             "Tokenize Latin text by sentences": "This operation will tokenize your Latin text by sentences, which is useful for sentence-based natural language processing.",
             "Perform KWIC analysis": "This operation will perform a Key Word in Context (KWIC) analysis, allowing you to see the occurrences of a word within the context of the text.",
+            "Perform word frequency analysis": "This operation will perform a Word Frequency Analysis, allowing you to see the number of times each word has been used in your target text."
         }
 
         selected_operation = var_operation.get()
@@ -127,12 +138,12 @@ def gui_main():
     var_operation.set(options[0][1])
     var_operation.trace("w", update_explanation)
     opt_operation = tk.OptionMenu(root, var_operation, *[option[1] for option in options])
-    opt_operation.grid(row=2, column=2, padx=10, pady=10)
+    opt_operation.grid(row=4, column=2, padx=10, pady=10)
 
     explanation_label = tk.StringVar()
     explanation_label.set("This operation will tokenize your Latin text by words, which is required for further word-based natural language processing.")
     lbl_explanation = tk.Label(root, textvariable=explanation_label, wraplength=300)
-    lbl_explanation.grid(row=2, column=3, padx=10, pady=10)
+    lbl_explanation.grid(row=4, column=3, padx=10, pady=10)
 
     # function to choose file and store the location in a variable
     def choose_file():
@@ -150,7 +161,7 @@ def gui_main():
 
     txt_terminal = tk.Text(root, height=20, width=1000)
     txt_terminal.configure(state='normal')  # Add this line to enable the state of the txt_terminal widget
-    txt_terminal.grid(row=4, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
+    txt_terminal.grid(row=5, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
     root.grid_columnconfigure(1, weight=1)
     root.grid_rowconfigure(4, weight=1)
     sys.stdout = CustomTextRedirector(txt_terminal)
@@ -173,12 +184,19 @@ def gui_main():
         source_path = os.path.normpath(location_raw_sourcetext)
         destination_path = os.path.normpath(location_output)
         cli_command = ['lutherscripts-cli', '-o', operation_name, '-s', source_path, '-d', destination_path]
+        # Add argument 1 and argument 2 for KWIC analysis
+        if operation_name == "kwic_analysis":
+            argument1 = ent_argument1.get()
+            argument2 = ent_argument2.get()
+            cli_command.extend(["-1", argument1, "-2", argument2])
+
         process = await asyncio.create_subprocess_exec(
             *cli_command,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
 
+    
         output = ''
         while True:
             char = await process.stdout.read(1)
@@ -210,6 +228,15 @@ def gui_main():
         asyncio.set_event_loop(loop)
         print("Starting operation...")
         print("Please wait, this might take couple of seconds...")
+
+        # Check the selected operation and validate arguments for KWIC analysis
+        operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
+        if operation_name == "kwic_analysis":
+            argument1 = ent_argument1.get()
+            argument2 = ent_argument2.get()
+            if not argument1 or not argument2:
+                print("Please enter both Argument1 (Keyword) and argument2 (Context length, a number of words you want to see left and right of a keyword hit) for the KWIC analysis")
+                return
         
         ind = 0
 
@@ -235,7 +262,7 @@ def gui_main():
 
     # Start Operation! button
     btn_play = tk.Button(root, text="Start Operation!", command=start_operation)
-    btn_play.grid(row=3, column=3, padx=10, pady=10)
+    btn_play.grid(row=6, column=3, padx=10, pady=10)
 
     # Print a welcome message to the terminal
     print("Welcome to Lutherscripts!")
