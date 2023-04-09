@@ -7,10 +7,8 @@ import logging
 import sys
 import io
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-def main(source_path, destination_path):
-    
+def main(source_path, destination_path, progress_callback=None):
     logging.basicConfig(level=logging.INFO)
     # Instantiate a Latin-specific NLP object
     cltk_nlp = NLP(language="lat")
@@ -30,12 +28,12 @@ def main(source_path, destination_path):
 
     # Process the text_chunks with cltk_nlp and update the progress bar
     word_tokens = []
-    for chunk in tqdm(text_chunks, desc="Tokenizing words"):
+    for chunk in tqdm(text_chunks, desc="Tokenizing words", file=sys.stdout):
         doc = cltk_nlp(chunk)
         for word in doc.words:
             word_tokens.append(word.string)
-
-    print(word_tokens)
+        if progress_callback:
+            progress_callback(len(word_tokens) / len(text_chunks))
 
     # Save the tokenized output to a JSON file
     output_file = os.path.abspath(destination_path)
@@ -44,4 +42,3 @@ def main(source_path, destination_path):
 
     # Print a message to confirm that the file has been saved
     print(f'The tokenized output has been saved as {destination_path}')
-

@@ -13,7 +13,7 @@ __license__ = "MIT"
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-def main(source_path, destination_path):
+def main(source_path, destination_path, progress_callback=None):
     # Instantiate a Latin-specific NLP object
     cltk_nlp = NLP(language="lat")
 
@@ -37,8 +37,8 @@ def main(source_path, destination_path):
         for sentence in doc.sentences:
             sentence_text = ' '.join([word.string for word in sentence.words])
             sentence_tokens.append(sentence_text.strip())
-
-    print(sentence_tokens)
+        if progress_callback:
+            progress_callback(len(sentence_tokens) / len(text_chunks))
 
     # Capture the output in a string buffer
     with io.StringIO() as buffer:

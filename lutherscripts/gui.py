@@ -20,11 +20,12 @@ __license__ = "MIT"
 class CustomTextRedirector:
     def __init__(self, widget):
         self.widget = widget
-        self.widget.configure(background='black', foreground='green') # Set background and text color
+        self.widget.configure(background='black', foreground='green')  # Set background and text color
+        self.encoding = 'utf-8'  # Set the encoding for the widget
 
     def write(self, message):
         self.widget.configure(state='normal')
-        self.widget.insert(tk.END, message)
+        self.widget.insert(tk.END, message.encode(self.encoding))  # Encode the message with the specified encoding
         self.widget.see(tk.END)
         self.widget.configure(state='disabled')
         self.widget.update()
@@ -32,9 +33,36 @@ class CustomTextRedirector:
     def flush(self):
         pass
 
+    def readline(self):
+        return ''
 
-def create_image_label(parent, root):
-    # Load the frames of Martin Luther
+def create_image_label(parent, root, frames):
+    lbl_luther_image = tk.Label(parent, image=frames[0])
+    lbl_luther_image.grid(row=0, rowspan=5, column=0, padx=10, pady=10)
+
+    def update_image():
+        nonlocal ind
+        try:
+            lbl_luther_image.configure(image=frames[ind])
+            lbl_luther_image.image = frames[ind]
+            root.after(50, update_image)
+        except tk.TclError:
+            pass
+        ind = (ind + 1) % len(frames)
+
+    ind = 0
+    update_image()
+
+    return lbl_luther_image
+
+def gui_main():
+
+    root = tk.Tk()
+    root.geometry("1400x600")
+    root.title("Lutherscripts (Dev version) - A NLP toolset for Latin language")
+
+    txt_terminal = tk.Text(root, height=20, width=1000)
+
     frames = []
     frame_num = 0
     while True:
@@ -46,39 +74,11 @@ def create_image_label(parent, root):
         except FileNotFoundError:
             break
 
-    lbl_luther_image = tk.Label(parent, image=frames[0])
-    lbl_luther_image.grid(row=0, rowspan=5, column=0, padx=10, pady=10)
-
-    # Function to update the GIF frames
-    def update_image_label(ind):
-        try:
-            lbl_luther_image.configure(image=frames[ind])
-            lbl_luther_image.image = frames[ind]
-            ind += 1
-            if ind == len(frames):
-                ind = 0
-            root.after(100, update_image_label, ind)
-        except tk.TclError:
-            pass
-
-    # Start the animation
-    update_image_label(0)
-
-    return lbl_luther_image
+    lbl_luther_image = create_image_label(root, root, frames)
 
 
-def gui_main():
-
-    root = tk.Tk()
-    root.geometry("1400x600")
-    root.title("Lutherscripts (Dev version) - A NLP toolset for Latin language")
-
-    txt_terminal = tk.Text(root, height=20, width=1000)
 
     logging.basicConfig(level=logging.INFO)
-
-    # create widgets for Operations tab
-    create_image_label(root, root)
 
     # Choose raw source text
     lbl_raw_sourcetext = tk.Label(root, text="Choose raw source text:")
@@ -168,28 +168,34 @@ def gui_main():
      #   loop = asyncio.get_event_loop()
       #  loop.run_until_complete(run_script_async(cli_command))
 
-
     async def run_script_async():
         operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
         source_path = os.path.normpath(location_raw_sourcetext)
         destination_path = os.path.normpath(location_output)
         cli_command = ['lutherscripts-cli', '-o', operation_name, '-s', source_path, '-d', destination_path]
-
         process = await asyncio.create_subprocess_exec(
             *cli_command,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
 
+        output = ''
         while True:
-            output = await process.stdout.readline()
-            if not output:
+            char = await process.stdout.read(1)
+            if not char:
                 break
-            txt_terminal.configure(state='normal')
-            txt_terminal.insert(tk.END, output.decode())
-            txt_terminal.see(tk.END)
-            txt_terminal.configure(state='disabled')
-            txt_terminal.update()
+            char = char.decode(errors='replace')
+
+            if char == '\r':
+                txt_terminal.configure(state='normal')
+                txt_terminal.delete(f'{tk.END} -2c linestart', tk.END)
+                txt_terminal.insert(tk.END, output)
+                txt_terminal.see(tk.END)
+                txt_terminal.configure(state='disabled')
+                txt_terminal.update()
+                output = ''
+            else:
+                output += char
 
         stderr_data = await process.stderr.read()
         if stderr_data:
@@ -199,13 +205,33 @@ def gui_main():
             txt_terminal.configure(state='disabled')
             txt_terminal.update()
 
-    
     def start_operation():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        print("Starting operation...")
+        print("Please wait, this might take couple of seconds...")
+        
+        ind = 0
+
+        # Start the animation
+        def update_image():
+            nonlocal ind
+            try:
+                lbl_luther_image.configure(image=frames[ind])
+                lbl_luther_image.image = frames[ind]
+                root.after(5, update_image)
+            except tk.TclError:
+                pass
+            ind = (ind + 1) % len(frames)
+
+        update_image()
+
+        # Call the main function with the callback function
         loop.run_until_complete(run_script_async())
         loop.close()
 
+        # Stop the animation
+        root.after_cancel(update_image)
 
     # Start Operation! button
     btn_play = tk.Button(root, text="Start Operation!", command=start_operation)
@@ -222,9 +248,7 @@ def gui_main():
     sys.stderr = CustomTextRedirector(txt_terminal)
 
     # Start the GUI
-    print("Before mainloop")
     root.mainloop()
-    print("After mainloop")
 
 
 if __name__ == '__main__':
