@@ -1,25 +1,67 @@
+import asyncio
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import os
+import sys
 import subprocess
 import pkg_resources
 from pathlib import Path
+import logging
+import queue
 
 
 __author__ = "benjamsf"
 __license__ = "MIT"
 
 
-def create_image_label(parent):
-    # Add the image of Martin Luther
-    image_bytes = pkg_resources.resource_string("lutherscripts", "luther.gif")
+class CustomTextRedirector:
+    def __init__(self, widget):
+        self.widget = widget
+        self.widget.configure(background='black', foreground='green') # Set background and text color
 
-    # Create a PhotoImage from the image bytes
-    luther_photo = tk.PhotoImage(data=image_bytes)
-    lbl_luther_image = tk.Label(parent, image=luther_photo)
-    lbl_luther_image.image = luther_photo
+    def write(self, message):
+        self.widget.configure(state='normal')
+        self.widget.insert(tk.END, message)
+        self.widget.see(tk.END)
+        self.widget.configure(state='disabled')
+        self.widget.update()
+
+    def flush(self):
+        pass
+
+
+def create_image_label(parent, root):
+    # Load the frames of Martin Luther
+    frames = []
+    frame_num = 0
+    while True:
+        try:
+            frame_bytes = pkg_resources.resource_string("lutherscripts", f"luther{frame_num}.gif")
+            frame_photo = tk.PhotoImage(data=frame_bytes)
+            frames.append(frame_photo)
+            frame_num += 1
+        except FileNotFoundError:
+            break
+
+    lbl_luther_image = tk.Label(parent, image=frames[0])
     lbl_luther_image.grid(row=0, rowspan=5, column=0, padx=10, pady=10)
+
+    # Function to update the GIF frames
+    def update_image_label(ind):
+        try:
+            lbl_luther_image.configure(image=frames[ind])
+            lbl_luther_image.image = frames[ind]
+            ind += 1
+            if ind == len(frames):
+                ind = 0
+            root.after(100, update_image_label, ind)
+        except tk.TclError:
+            pass
+
+    # Start the animation
+    update_image_label(0)
+
     return lbl_luther_image
 
 
@@ -27,10 +69,14 @@ def gui_main():
 
     root = tk.Tk()
     root.geometry("1400x600")
-    root.title("LutherScripts v0.2.0 - A NLP toolset for Latin language")
+    root.title("Lutherscripts (Dev version) - A NLP toolset for Latin language")
+
+    txt_terminal = tk.Text(root, height=20, width=1000)
+
+    logging.basicConfig(level=logging.INFO)
 
     # create widgets for Operations tab
-    create_image_label(root)
+    create_image_label(root, root)
 
     # Choose raw source text
     lbl_raw_sourcetext = tk.Label(root, text="Choose raw source text:")
@@ -59,13 +105,25 @@ def gui_main():
     lbl_operation.grid(row=2, column=1, padx=10, pady=10)
 
     options = [
-        ("word_tokenize_latin", "Tokenize Latin text by words"),
-        ("sent_tokenize_latin", "Tokenize Latin text by sentences"),
-        ("nltk_do_kwic", "Perform KWIC analysis"),
-    ]
+        ("word_tokenize_latin", "Tokenize Latin text by words"),        
+        ("sent_tokenize_latin", "Tokenize Latin text by sentences"),        
+        ("nltk_do_kwic", "Perform KWIC analysis"),    
+        ]
+
+    def update_explanation(*args):
+        explanations = {
+            "Tokenize Latin text by words": "This operation will tokenize your Latin text by words, which is required for further word-based natural language processing.",
+            "Tokenize Latin text by sentences": "This operation will tokenize your Latin text by sentences, which is useful for sentence-based natural language processing.",
+            "Perform KWIC analysis": "This operation will perform a Key Word in Context (KWIC) analysis, allowing you to see the occurrences of a word within the context of the text.",
+        }
+
+        selected_operation = var_operation.get()
+        explanation = explanations.get(selected_operation, "No explanation available.")
+        explanation_label.set(explanation)
 
     var_operation = tk.StringVar(root)
     var_operation.set(options[0][1])
+    var_operation.trace("w", update_explanation)
     opt_operation = tk.OptionMenu(root, var_operation, *[option[1] for option in options])
     opt_operation.grid(row=2, column=2, padx=10, pady=10)
 
@@ -73,16 +131,6 @@ def gui_main():
     explanation_label.set("This operation will tokenize your Latin text by words, which is required for further word-based natural language processing.")
     lbl_explanation = tk.Label(root, textvariable=explanation_label, wraplength=300)
     lbl_explanation.grid(row=2, column=3, padx=10, pady=10)
-
-    # Start Operation! button
-    btn_play = tk.Button(root, text="Start Operation!", command=run_script)
-    btn_play.grid(row=3, column=3, padx=10, pady=10)
-
-    # Terminal output
-    txt_terminal = tk.Text(root, height=20, width=1000)
-    txt_terminal.grid(row=4, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
-    root.grid_columnconfigure(1, weight=1)
-    root.grid_rowconfigure(4, weight=1)
 
     # function to choose file and store the location in a variable
     def choose_file():
@@ -98,25 +146,90 @@ def gui_main():
         output_file_label.set(location_output)
         print(f"Output file selected: {location_output}")
 
-    def run_script():
+    def check_output(output_event):
+        while not output_event.is_set():
+            txt_terminal.see(tk.END)  # scroll to end of text widget
+            output_event.clear()
+
+    
+    output_event = asyncio.Event()
+    check_output(output_event)
+
+    def run_script(output_event):
         global location_raw_sourcetext, location_output
         operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
         source_path = os.path.normpath(location_raw_sourcetext)
         destination_path = os.path.normpath(location_output)
         cli_command = ['lutherscripts-cli', '-o', operation_name, '-s', source_path, '-d', destination_path]
-        process = subprocess.Popen(cli_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        txt_terminal.delete(1.0, tk.END)
-        while True:
-            output = process.stdout.readline().decode('utf-8')
-            if output == '' and process.poll() is not None:
-                break
-            txt_terminal.insert(tk.END, output)
-            txt_terminal.see(tk.END)
-        returncode = process.poll()
 
-    # start the GUI
+        # Create a new event loop and run it
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(run_script_async(cli_command, output_event))
+
+        # Start the output checking loop
+        check_output(output_event)
+
+    async def run_script_async(cli_command, output_queue):
+        operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
+        source_path = os.path.normpath(location_raw_sourcetext)
+        destination_path = os.path.normpath(location_output)
+
+        loop = asyncio.get_event_loop()
+
+        process = await asyncio.create_subprocess_exec(
+            *cli_command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+        while True:
+            output = await process.stdout.readline()
+            if not output:
+                break
+            txt_terminal.insert(tk.END, output.decode())
+            output_queue.put(True)  # signal that new output is available
+
+        stderr_data = await process.stderr.read()
+        if stderr_data:
+            txt_terminal.insert(tk.END, stderr_data.decode())
+            output_queue.put(True)  # signal that new output is available
+
+
+    # Schedule the check_output function to run again after 100 milliseconds
+    output_event = asyncio.Event()
+    txt_terminal.after(100, check_output, output_event)
+
+    # Call the check_output function once to start the loop
+    check_output(output_event)
+
+    # Redirect standard output and error to the terminal widget
+    txt_terminal = tk.Text(root, height=20, width=1000)
+    txt_terminal.configure(state='normal')  # Add this line to enable the state of the txt_terminal widget
+    txt_terminal.grid(row=4, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
+    root.grid_columnconfigure(1, weight=1)
+    root.grid_rowconfigure(4, weight=1)
+    sys.stdout = CustomTextRedirector(txt_terminal)
+    sys.stderr = CustomTextRedirector(txt_terminal)
+
+    # Start Operation! button
+    btn_play = tk.Button(root, text="Start Operation!", command=run_script)
+    btn_play.grid(row=3, column=3, padx=10, pady=10)
+
+    # Print a welcome message to the terminal
+    print("Welcome to Lutherscripts!")
+    print("Development version")
+
+    # Start the GUI
     root.mainloop()
 
 if __name__ == '__main__':
     gui_main()
+
+
+
+
+
+
+       
 

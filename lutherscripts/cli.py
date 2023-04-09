@@ -31,7 +31,7 @@ def word_tokenize_latin(source_path, destination_path):
     print(output.encode('utf-8'))
 
 def kwic_analysis(keyword, context_size, source_path, destination_path):
-    from src.text_processing.nltk_do_kwic_analysis import main as nltk_do_kwic_analysis
+    from src.text_processing.nltk_do_kwic import main as nltk_do_kwic_analysis
     output = nltk_do_kwic_analysis(keyword, context_size, source_path, destination_path)
     print(output.encode('utf-8'))
 

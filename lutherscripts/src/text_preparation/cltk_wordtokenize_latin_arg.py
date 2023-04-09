@@ -1,9 +1,6 @@
-# Python script to prepare Luther's Werke im WWW text to form usable in NLP
-__author__ = "benjamsf"
-__license__ = "MIT"
-
 import os
 import string
+import json
 from cltk import NLP
 from tqdm import tqdm
 import logging
@@ -17,7 +14,6 @@ def main(source_path, destination_path):
     logging.basicConfig(level=logging.INFO)
     # Instantiate a Latin-specific NLP object
     cltk_nlp = NLP(language="lat")
-
 
     input_file = os.path.abspath(source_path)
 
@@ -41,9 +37,11 @@ def main(source_path, destination_path):
 
     print(word_tokens)
 
-    # Save the tokenized output to a file
+    # Save the tokenized output to a JSON file
     output_file = os.path.abspath(destination_path)
     with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(' '.join(word_tokens))
+        json.dump(word_tokens, f, ensure_ascii=False)
+
     # Print a message to confirm that the file has been saved
     print(f'The tokenized output has been saved as {destination_path}')
+
