@@ -1,17 +1,13 @@
 import io
 import os
 import re
+import json
 from cltk import NLP
 from tqdm import tqdm
 import logging
 import sys
 import io
 
-
-__author__ = "benjamsf"
-__license__ = "MIT"
-
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 def main(source_path, destination_path, progress_callback=None):
     # Instantiate a Latin-specific NLP object
@@ -40,24 +36,11 @@ def main(source_path, destination_path, progress_callback=None):
         if progress_callback:
             progress_callback(len(sentence_tokens) / len(text_chunks))
 
-    # Capture the output in a string buffer
-    with io.StringIO() as buffer:
-        for chunk in tqdm(text_chunks, desc="Tokenizing sentences"):
-            doc = cltk_nlp(chunk)
-            for sentence in doc.sentences:
-                sentence_text = ' '.join([word.string for word in sentence.words])
-                sentence_tokens.append(sentence_text.strip())
-
-        buffer.write('\n'.join(sentence_tokens))
-
-        # Save the tokenized output to a file
+        # Save the tokenized output to a JSON file
         output_file = os.path.abspath(destination_path)
         with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(buffer.getvalue())
+            json.dump(sentence_tokens, f, ensure_ascii=False)
 
         # Print a message to confirm that the file has been saved
         print(f'The tokenized output has been saved as {output_file}')
-
-    # Return the output as a string
-    return buffer.getvalue()
 

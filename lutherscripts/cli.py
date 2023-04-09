@@ -13,12 +13,11 @@ sys.path.append(str(file_path.parent))
 
 
 def add_arguments(parser):
-    parser.add_argument("-o", "--operation", type=str, choices=["word_tokenize_latin", "sent_tokenize_latin", "kwic"], required=True, help="Choose operation: word_tokenize_latin, sent_tokenize_latin, or kwic")
-    parser.add_argument("-1", "--first-detail", type=str, help="First detail flag for operation")
-    parser.add_argument("-2", "--second-detail", type=int, help="Second detail flag for operation")
+    parser.add_argument("-o", "--operation", type=str, choices=["word_tokenize_latin", "sent_tokenize_latin", "kwic_analysis", "freq_analysis"], required=True, help="Choose operation: word_tokenize_latin, sent_tokenize_latin, or kwic")
+    parser.add_argument("-1", "--first-detail", type=str, help="First detail flag for operation, depends on the operation")
+    parser.add_argument("-2", "--second-detail", type=int, help="Second detail flag for operation, depends on the operation")
     parser.add_argument("-s", "--source-path", type=str, required=True, help="The path to the source text file")
     parser.add_argument("-d", "--destination-path", type=str, required=True, help="The path to the output file")
-
 
 def sentence_tokenize_latin(source_path, destination_path):
     from src.text_preparation.cltk_sentencetokenize_latin_arg import main as cltk_sentencetokenize_latin
@@ -35,8 +34,8 @@ def kwic_analysis(keyword, context_size, source_path, destination_path):
     output = nltk_do_kwic_analysis(keyword, context_size, source_path, destination_path)
     print(output.encode('utf-8'))
 
-def freq_analysis(source_path, destination_path)
-    from src.text_processing.nltk_do_freqanalysis import main as nltk_do_freqanalysis)
+def freq_analysis(source_path, destination_path):
+    from src.text_processing.nltk_do_freqanalysis import main as nltk_do_freqanalysis
     output = nltk_do_freqanalysis(source_path, destination_path)
     print(output.encode('utf-8'))
 
@@ -57,7 +56,7 @@ def cli_main():
             print("Both -1 and -2 flags must be provided for the KWIC operation.")
         else:
             kwic_analysis(args.first_detail, args.second_detail, source_path, destination_path)
-    elif args.operation == 'freq-analysis'
+    elif args.operation == 'freq-analysis':
         freq_analysis(source_path, destination_path)
 
 if __name__ == '__main__':

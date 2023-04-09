@@ -1,14 +1,14 @@
 import json
 import os
 import nltk
-from nltk import word_tokenize
 from nltk.text import Text
+from tqdm import tqdm
 
 __author__ = "benjamsf"
 __license__ = "MIT"
 
 
-def main(keyword, context_size, source_path, destination_path):
+def main(keyword, context_size, source_path, destination_path, progress_callback=None):
     # Load the tokenized text from the source file
     with open(source_path, 'r', encoding='utf-8') as f:
         tokenized_text = f.read()
@@ -17,21 +17,28 @@ def main(keyword, context_size, source_path, destination_path):
     text = Text(nltk.word_tokenize(tokenized_text))
 
     # Perform KWIC analysis for the keyword
-    kwic_results = list(text.concordance_list(keyword, lines=nltk.ConcordanceIndex(text.tokens).count(keyword), width=context_size))
+    concordance = nltk.ConcordanceIndex(text.tokens)
+    kwic_results = []
+    keyword_occurrences = concordance.offsets(keyword)
+    for index in tqdm(keyword_occurrences, desc="Analyzing keyword occurrences"):
+        left_context = text.tokens[index-context_size:index]
+        right_context = text.tokens[index+len(keyword):index+len(keyword)+context_size]
+        kwic_results.append({
+            "left_context": " ".join(left_context),
+            "keyword": keyword,
+            "right_context": " ".join(right_context)
+        })
+        if progress_callback:
+            progress_callback(len(kwic_results) / len(keyword_occurrences))
 
     # Convert the KWIC results into JSON format
-    kwic_json = []
-    for result in kwic_results:
-        kwic_json.append({
-            "left_context": " ".join(result[0]),
-            "keyword": result[1],
-            "right_context": " ".join(result[2])
-        })
+    kwic_json = json.dumps(kwic_results, ensure_ascii=False, indent=2)
 
     # Save the KWIC analysis as a JSON file
     with open(destination_path, 'w', encoding='utf-8') as f:
-        json.dump(kwic_json, f, ensure_ascii=False, indent=2)
+        f.write(kwic_json)
 
     # Print a message to confirm that the file has been saved
     print(f'The KWIC analysis has been saved as {destination_path}')
+
 
