@@ -41,8 +41,8 @@ def build_corpus(source_path, destination_path):
     output = gensim_corpus_builder(source_path, destination_path)
 
 def topic_modeling(num_topics, num_passes, source_path, dictionary_path, destination_path):
-    from src.text_processing.gensim_corpus_builder import main as gensim_corpus_builder
-    output = gensim_corpus_builder(num_topics, num_passes, source_path, dictionary_path, destination_path)
+    from src.text_processing.gensim_topic_modeling import main as gensim_topic_modeling
+    output = gensim_topic_modeling(num_topics, num_passes, source_path, dictionary_path, destination_path)
 
 def cli_main():
     parser = argparse.ArgumentParser(description="Lutherscript operations launcher")

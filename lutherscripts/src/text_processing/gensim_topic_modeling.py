@@ -7,7 +7,7 @@ from tqdm import tqdm
 __author__ = "benjamsf"
 __license__ = "MIT"
 
-def main(source_path, dictionary_path, num_topics, num_passes, destination_path):
+def main(num_topics, num_passes, source_path, dictionary_path, destination_path):
     # Load the corpus from the file
     corpus = gensim.corpora.MmCorpus(source_path)
 
