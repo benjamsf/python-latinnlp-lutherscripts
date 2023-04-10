@@ -11,6 +11,7 @@ import logging
 import queue
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
+import time
 
 
 __author__ = "benjamsf"
@@ -40,20 +41,8 @@ def create_image_label(parent, root, frames):
     lbl_luther_image = tk.Label(parent, image=frames[0])
     lbl_luther_image.grid(row=0, rowspan=6, column=0, padx=10, pady=10)
 
-    def update_image():
-        nonlocal ind
-        try:
-            lbl_luther_image.configure(image=frames[ind])
-            lbl_luther_image.image = frames[ind]
-            root.after(50, update_image)
-        except tk.TclError:
-            pass
-        ind = (ind + 1) % len(frames)
-
-    ind = 0
-    update_image()
-
     return lbl_luther_image
+
 
 def gui_main():
 
@@ -63,18 +52,16 @@ def gui_main():
 
     txt_terminal = tk.Text(root, height=20, width=1000)
 
-    frames = []
-    frame_num = 0
-    while True:
-        try:
-            frame_bytes = pkg_resources.resource_string("lutherscripts", f"luther{frame_num}.gif")
-            frame_photo = tk.PhotoImage(data=frame_bytes)
-            frames.append(frame_photo)
-            frame_num += 1
-        except FileNotFoundError:
-            break
+    gif1 = tk.PhotoImage(file=pkg_resources.resource_filename(__name__, "luther0.gif"))
+    gif2 = tk.PhotoImage(file=pkg_resources.resource_filename(__name__, "luther1.gif"))
+    gif3 = tk.PhotoImage(file=pkg_resources.resource_filename(__name__, "luther2.gif"))
 
-    lbl_luther_image = create_image_label(root, root, frames)
+
+    lbl_luther_image = tk.Label(root, image=gif1)
+    lbl_luther_image.grid(row=0, rowspan=6, column=0, padx=10, pady=10)
+    
+    frames = [gif1, gif2, gif3]
+    interval = 0.5  # in seconds
 
 
 
@@ -178,6 +165,12 @@ def gui_main():
         # Run the run_script_async coroutine using the default event loop
      #   loop = asyncio.get_event_loop()
       #  loop.run_until_complete(run_script_async(cli_command))
+    
+    def update_image_label(lbl, frames):
+        frame = frames.pop(0)
+        frames.append(frame)
+        lbl.config(image=frame)
+
 
     async def run_script_async():
         operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
@@ -196,6 +189,7 @@ def gui_main():
             stderr=asyncio.subprocess.PIPE
         )
 
+        lbl_luther_image.config(image=gif1)
     
         output = ''
         while True:
@@ -238,27 +232,14 @@ def gui_main():
                 print("Please enter both Argument1 (Keyword) and argument2 (Context length, a number of words you want to see left and right of a keyword hit) for the KWIC analysis")
                 return
         
-        ind = 0
-
-        # Start the animation
-        def update_image():
-            nonlocal ind
-            try:
-                lbl_luther_image.configure(image=frames[ind])
-                lbl_luther_image.image = frames[ind]
-                root.after(5, update_image)
-            except tk.TclError:
-                pass
-            ind = (ind + 1) % len(frames)
-
-        update_image()
-
+        while True:
+            update_image_label(lbl_luther_image, frames)
+            root.update()
+            time.sleep(interval)
+        
         # Call the main function with the callback function
         loop.run_until_complete(run_script_async())
         loop.close()
-
-        # Stop the animation
-        root.after_cancel(update_image)
 
     # Start Operation! button
     btn_play = tk.Button(root, text="Start Operation!", command=start_operation)
