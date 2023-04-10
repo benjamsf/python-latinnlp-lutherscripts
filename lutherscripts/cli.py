@@ -51,7 +51,7 @@ def cli_main():
         sentence_tokenize_latin(source_path, destination_path)
     elif args.operation == 'word_tokenize_latin':
         word_tokenize_latin(source_path, destination_path)
-    elif args.operation == 'kwic':
+    elif args.operation == 'kwic_analysis':
         if not args.first_detail or not args.second_detail:
             print("Both -1 and -2 flags must be provided for the KWIC operation.")
         else:
