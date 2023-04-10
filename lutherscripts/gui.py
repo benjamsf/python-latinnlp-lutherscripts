@@ -64,9 +64,10 @@ def gui_main():
     frames = [gif1, gif2, gif3]
     interval = 0.5  # in seconds
 
-
-
     logging.basicConfig(level=logging.INFO)
+
+    # ugly but here it is
+    location_dictionary_file = ''
 
     # Choose raw source text ROW 0
     lbl_raw_sourcetext = tk.Label(root, text="Choose the Primary Source:")
@@ -82,8 +83,8 @@ def gui_main():
     # Choose dictionary file ROW 1
     lbl_dictionarysourcetext = tk.Label(root, text="Choose the Dictionary Source, if applicable:")
     lbl_dictionarysourcetext.grid(row=1, column=1, padx=10, pady=10)
-    lbl_dictionarysourcetext = tk.Button(root, text="Browse...", command=lambda: choose_dictionary_file())
-    lbl_dictionarysourcetext.grid(row=1, column=2, padx=10, pady=10)
+    btn_dictionarysourcetext = tk.Button(root, text="Browse...", command=lambda: choose_dictionary_file())
+    btn_dictionarysourcetext.grid(row=1, column=2, padx=10, pady=10)
 
     dictionarysourcefile_label = tk.StringVar()
     dictionarysourcefile_label.set("No file selected")
@@ -158,7 +159,7 @@ def gui_main():
     def choose_dictionary_file():
         global location_dictionary_file
         location_dictionary_file = filedialog.askopenfilename(title="Select a File", initialdir=os.path.dirname(os.path.abspath(__file__)))
-        lbl_dictionarysourcetext.set(location_dictionary_file)
+        dictionarysourcefile_label.set(location_dictionary_file)
         print(f"File selected: {location_dictionary_file}")
 
     # function to choose output file and store the location in a variable
@@ -176,17 +177,6 @@ def gui_main():
     sys.stdout = CustomTextRedirector(txt_terminal)
     sys.stderr = CustomTextRedirector(txt_terminal)
     
-
-    #def run_script():
-    #    global location_raw_sourcetext, location_output
-    #    operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
-    #    source_path = os.path.normpath(location_raw_sourcetext)
-    #    destination_path = os.path.normpath(location_output)
-    #    cli_command = ['lutherscripts-cli', '-o', operation_name, '-s', source_path, '-d', destination_path]
-
-        # Run the run_script_async coroutine using the default event loop
-     #   loop = asyncio.get_event_loop()
-      #  loop.run_until_complete(run_script_async(cli_command))
     
     def update_image_label(lbl, frames):
         frame = frames.pop(0)
