@@ -13,7 +13,7 @@ sys.path.append(str(file_path.parent))
 
 
 def add_arguments(parser):
-    parser.add_argument("-o", "--operation", type=str, choices=["word_tokenize_latin", "sent_tokenize_latin", "kwic_analysis", "freq_analysis"], required=True, help="Choose operation: word_tokenize_latin, sent_tokenize_latin, or kwic")
+    parser.add_argument("-o", "--operation", type=str, choices=["word_tokenize_latin", "sent_tokenize_latin", "kwic_analysis", "freq_analysis", "build_corpus", "topic_modeling"], required=True, help="Choose operation: word_tokenize_latin, sent_tokenize_latin, or kwic")
     parser.add_argument("-1", "--first-detail", type=str, help="First detail flag for operation, depends on the operation")
     parser.add_argument("-2", "--second-detail", type=int, help="Second detail flag for operation, depends on the operation")
     parser.add_argument("-s", "--source-path", type=str, required=True, help="The path to the source text file")
@@ -47,7 +47,7 @@ def build_corpus(source_path, destination_path):
 
 def topic_modeling(num_topics, num_passes, source_path, dictionary_path, destination_path):
     from src.text_processing.gensim_corpus_builder import main as gensim_corpus_builder
-    output = gensim_corpus_builder(source_path, destination_path)
+    output = gensim_corpus_builder(num_topics, num_passes, source_path, dictionary_path, destination_path)
     print(output.encode('utf-8'))
 
 def cli_main():
@@ -57,6 +57,7 @@ def cli_main():
 
     source_path = os.path.abspath(args.source_path)
     destination_path = os.path.abspath(args.destination_path)
+    dictionary_path = os.path.abspath(args.dictionary_path)
 
     if args.operation == 'sent_tokenize_latin':
         sentence_tokenize_latin(source_path, destination_path)
@@ -71,8 +72,8 @@ def cli_main():
         if not args.first_detail or not args.second_detail:
             print("Both -1 and -2 flags must be provided for the Topic Modeling operation.")
         else:
-            topic_modeling(args.first_detail, args.second_detail, source_path, destination_path)
-    elif args.operation == 'freq-analysis':
+            topic_modeling(args.first_detail, args.second_detail, source_path, dictionary_path, destination_path)
+    elif args.operation == 'freq_analysis':
         freq_analysis(source_path, destination_path)
     elif args.operation == 'build_corpus':
         build_corpus(source_path, destination_path)
