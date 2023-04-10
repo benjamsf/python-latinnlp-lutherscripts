@@ -23,32 +23,26 @@ def add_arguments(parser):
 def sentence_tokenize_latin(source_path, destination_path):
     from src.text_preparation.cltk_sentencetokenize_latin_arg import main as cltk_sentencetokenize_latin
     output = cltk_sentencetokenize_latin(source_path, destination_path)
-    print(output.encode('utf-8'))
 
 def word_tokenize_latin(source_path, destination_path):
     from src.text_preparation.cltk_wordtokenize_latin_arg import main as cltk_wordtokenize_latin
     output = cltk_wordtokenize_latin(source_path, destination_path)
-    print(output.encode('utf-8'))
 
 def kwic_analysis(keyword, context_size, source_path, destination_path):
     from src.text_processing.nltk_do_kwic import main as nltk_do_kwic_analysis
     output = nltk_do_kwic_analysis(keyword, context_size, source_path, destination_path)
-    print(output.encode('utf-8'))
 
 def freq_analysis(source_path, destination_path):
     from src.text_processing.nltk_do_freqanalysis import main as nltk_do_freqanalysis
     output = nltk_do_freqanalysis(source_path, destination_path)
-    print(output.encode('utf-8'))
 
 def build_corpus(source_path, destination_path):
     from src.text_processing.gensim_corpus_builder import main as gensim_corpus_builder
     output = gensim_corpus_builder(source_path, destination_path)
-    print(output.encode('utf-8'))
 
 def topic_modeling(num_topics, num_passes, source_path, dictionary_path, destination_path):
     from src.text_processing.gensim_corpus_builder import main as gensim_corpus_builder
     output = gensim_corpus_builder(num_topics, num_passes, source_path, dictionary_path, destination_path)
-    print(output.encode('utf-8'))
 
 def cli_main():
     parser = argparse.ArgumentParser(description="Lutherscript operations launcher")

@@ -32,13 +32,12 @@ def main(source_path, destination_path, progress_callback=None):
         doc = cltk_nlp(chunk)
         for word in doc.words:
             word_tokens.append(word.string)
-        if progress_callback:
-            progress_callback(len(word_tokens) / len(text_chunks))
 
     # Save the tokenized output to a JSON file
     output_file = os.path.abspath(destination_path)
     with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(word_tokens, f, ensure_ascii=False)
+        json.dump([word_tokens], f, ensure_ascii=False)
 
     # Print a message to confirm that the file has been saved
     print(f'The tokenized output has been saved as {destination_path}')
+

@@ -164,7 +164,7 @@ def gui_main():
     # function to choose output file and store the location in a variable
     def choose_output_file():
         global location_output
-        location_output = filedialog.asksaveasfilename(title="Select output file location", defaultextension=".txt", initialdir=os.path.dirname(os.path.abspath(__file__)))
+        location_output = filedialog.asksaveasfilename(title="Select output file location", defaultextension=".json", initialdir=os.path.dirname(os.path.abspath(__file__)))
         output_file_label.set(location_output)
         print(f"Output file selected: {location_output}")
 
