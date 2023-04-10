@@ -48,7 +48,7 @@ def create_image_label(parent, root, frames):
 def gui_main():
 
     root = tk.Tk()
-    root.geometry("1400x600")
+    root.geometry("1500x640")
     root.title("Lutherscripts (Dev version) - A NLP toolset for Latin language")
 
     txt_terminal = tk.Text(root, height=20, width=1000)
