@@ -40,7 +40,7 @@ class CustomTextRedirector:
 
 def create_image_label(parent, root, frames):
     lbl_luther_image = tk.Label(parent, image=frames[0])
-    lbl_luther_image.grid(row=0, rowspan=6, column=0, padx=10, pady=10)
+    lbl_luther_image.grid(row=0, rowspan=8, column=0, padx=10, pady=10)
 
     return lbl_luther_image
 
@@ -59,7 +59,7 @@ def gui_main():
 
 
     lbl_luther_image = tk.Label(root, image=gif1)
-    lbl_luther_image.grid(row=0, rowspan=6, column=0, padx=10, pady=10)
+    lbl_luther_image.grid(row=0, rowspan=8, column=0, padx=10, pady=10)
     
     frames = [gif1, gif2, gif3]
     interval = 0.5  # in seconds
@@ -69,7 +69,7 @@ def gui_main():
     logging.basicConfig(level=logging.INFO)
 
     # Choose raw source text ROW 0
-    lbl_raw_sourcetext = tk.Label(root, text="Choose the Source Text:")
+    lbl_raw_sourcetext = tk.Label(root, text="Choose the Primary Source:")
     lbl_raw_sourcetext.grid(row=0, column=1, padx=10, pady=10)
     btn_raw_sourcetext = tk.Button(root, text="Browse...", command=lambda: choose_file())
     btn_raw_sourcetext.grid(row=0, column=2, padx=10, pady=10)
@@ -80,14 +80,14 @@ def gui_main():
     lbl_selected_file.grid(row=0, column=3, padx=10, pady=10)
 
     # Choose dictionary file ROW 1
-    lbl_dictionarysourcetext = tk.Label(root, text="Choose the Source Text:")
+    lbl_dictionarysourcetext = tk.Label(root, text="Choose the Dictionary Source, if applicable:")
     lbl_dictionarysourcetext.grid(row=1, column=1, padx=10, pady=10)
-    lbl_dictionarysourcetext = tk.Button(root, text="Browse...", command=lambda: choose_file())
+    lbl_dictionarysourcetext = tk.Button(root, text="Browse...", command=lambda: choose_dictionary_file())
     lbl_dictionarysourcetext.grid(row=1, column=2, padx=10, pady=10)
 
     dictionarysourcefile_label = tk.StringVar()
     dictionarysourcefile_label.set("No file selected")
-    lbl_dictionarysourceselected_file = tk.Label(root, textvariable=file_label)
+    lbl_dictionarysourceselected_file = tk.Label(root, textvariable=dictionarysourcefile_label)
     lbl_dictionarysourceselected_file.grid(row=1, column=3, padx=10, pady=10)
 
     # Choose output file location ROW 2
@@ -117,16 +117,20 @@ def gui_main():
     options = [
         ("word_tokenize_latin", "Tokenize Latin text by words"),        
         ("sent_tokenize_latin", "Tokenize Latin text by sentences"),        
-        ("kwic_analysis", "Perform KWIC analysis"),
-        ("freq_analysis", "Perform word frequency analysis")    
+        ("kwic_analysis", "Perform KWIC analysis from your JSON word tokenized text"),
+        ("freq_analysis", "Perform word frequency analysis from your JSON word tokenized text"),    
+        ("build_corpus", "Build a dictionary and corpus from your JSON word tokenized text"),
+        ("topic_modeling", "Perform Topic Modeling from your dictionary and corpus")
         ]
 
     def update_explanation(*args):
         explanations = {
-            "Tokenize Latin text by words": "This operation will tokenize your Latin text by words, which is required for further word-based natural language processing.",
-            "Tokenize Latin text by sentences": "This operation will tokenize your Latin text by sentences, which is useful for sentence-based natural language processing.",
-            "Perform KWIC analysis": "This operation will perform a Key Word in Context (KWIC) analysis, allowing you to see the occurrences of a word within the context of the text.",
-            "Perform word frequency analysis": "This operation will perform a Word Frequency Analysis, allowing you to see the number of times each word has been used in your target text."
+            "Tokenize Latin text by words": "This operation will tokenize your Latin text by words, which is required for further word-based natural language processing, using CLTK.",
+            "Tokenize Latin text by sentences": "This operation will tokenize your Latin text by sentences, which is useful for sentence-based natural language processing, using CLTK.",
+            "Perform KWIC analysis from your JSON word tokenized text": "This operation will perform a Key Word in Context (KWIC) analysis, allowing you to see the occurrences of a word within the context of the text, using NLTK. Source must be a Word Tokenized text in JSON format.",
+            "Perform word frequency analysis": "This operation will perform a Word Frequency Analysis, allowing you to see the number of times each word has been used in your target text, using NLTK. Source must be a Word Tokenized text in JSON format.",
+            "Build a dictionary and corpus from your JSON word tokenized text": "This operation will build a dictionary and a corpus from your Word Tokenized text in JSON format using GenSim, for to source further operations.",
+            "Perform Topic Modeling from your dictionary and corpus": "This operation will perform Topic Modeling using GenSim from your dictionary and corpus files. As Argument 1, pass the number of topics you want to try dig out from the text. As Argument 2, pass the number of passes to perform on the corpus."
         }
 
         selected_operation = var_operation.get()
@@ -166,9 +170,9 @@ def gui_main():
 
     txt_terminal = tk.Text(root, height=20, width=1000)
     txt_terminal.configure(state='normal')  # Add this line to enable the state of the txt_terminal widget
-    txt_terminal.grid(row=6, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
+    txt_terminal.grid(row=7, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
     root.grid_columnconfigure(1, weight=1)
-    root.grid_rowconfigure(6, weight=1)
+    root.grid_rowconfigure(5, weight=1)
     sys.stdout = CustomTextRedirector(txt_terminal)
     sys.stderr = CustomTextRedirector(txt_terminal)
     
@@ -193,7 +197,6 @@ def gui_main():
     async def run_script_async():
         operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
         source_path = os.path.normpath(location_raw_sourcetext)
-        dictionary_path = os.path.normpath(location_dictionary_file)
         destination_path = os.path.normpath(location_output)
         cli_command = ['lutherscripts-cli', '-o', operation_name, '-s', source_path, '-d', destination_path]
         # Add argument 1 and argument 2 for KWIC analysis
@@ -202,6 +205,7 @@ def gui_main():
             argument2 = ent_argument2.get()
             cli_command.extend(["-1", argument1, "-2", argument2])
         if operation_name == "topic_modeling":
+            dictionary_path = os.path.normpath(location_dictionary_file)
             argument1 = ent_argument1.get()
             argument2 = ent_argument2.get()
             cli_command.extend(["-1", argument1, "-2", argument2, "-dc", dictionary_path])
