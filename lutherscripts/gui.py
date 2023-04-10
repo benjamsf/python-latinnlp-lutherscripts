@@ -68,8 +68,8 @@ def gui_main():
 
     logging.basicConfig(level=logging.INFO)
 
-    # Choose raw source text
-    lbl_raw_sourcetext = tk.Label(root, text="Choose raw source text:")
+    # Choose raw source text ROW 0
+    lbl_raw_sourcetext = tk.Label(root, text="Choose the Source Text:")
     lbl_raw_sourcetext.grid(row=0, column=1, padx=10, pady=10)
     btn_raw_sourcetext = tk.Button(root, text="Browse...", command=lambda: choose_file())
     btn_raw_sourcetext.grid(row=0, column=2, padx=10, pady=10)
@@ -79,24 +79,35 @@ def gui_main():
     lbl_selected_file = tk.Label(root, textvariable=file_label)
     lbl_selected_file.grid(row=0, column=3, padx=10, pady=10)
 
-    # Choose output file location
-    lbl_output_file = tk.Label(root, text="Choose output file location:")
-    lbl_output_file.grid(row=1, column=1, padx=10, pady=10)
+    # Choose dictionary file ROW 1
+    lbl_dictionarysourcetext = tk.Label(root, text="Choose the Source Text:")
+    lbl_dictionarysourcetext.grid(row=1, column=1, padx=10, pady=10)
+    lbl_dictionarysourcetext = tk.Button(root, text="Browse...", command=lambda: choose_file())
+    lbl_dictionarysourcetext.grid(row=1, column=2, padx=10, pady=10)
+
+    dictionarysourcefile_label = tk.StringVar()
+    dictionarysourcefile_label.set("No file selected")
+    lbl_dictionarysourceselected_file = tk.Label(root, textvariable=file_label)
+    lbl_dictionarysourceselected_file.grid(row=1, column=3, padx=10, pady=10)
+
+    # Choose output file location ROW 2
+    lbl_output_file = tk.Label(root, text="Choose the Output File location:")
+    lbl_output_file.grid(row=2, column=1, padx=10, pady=10)
     btn_output_file = tk.Button(root, text="Browse...", command=lambda: choose_output_file())
-    btn_output_file.grid(row=1, column=2, padx=10, pady=10)
+    btn_output_file.grid(row=2, column=2, padx=10, pady=10)
 
     output_file_label = tk.StringVar()
     output_file_label.set("No file selected")
     lbl_selected_output_file = tk.Label(root, textvariable=output_file_label)
-    lbl_selected_output_file.grid(row=1, column=3, padx=10, pady=10)
+    lbl_selected_output_file.grid(row=2, column=3, padx=10, pady=10)
 
-        # Entry field for argument 1
+    # Entry field for argument 1&2 ROW 3
     lbl_argument1 = tk.Label(root, text="Argument 1 and 2:")
-    lbl_argument1.grid(row=2, column=1, padx=4, pady=4)
+    lbl_argument1.grid(row=3, column=1, padx=4, pady=4)
     ent_argument1 = tk.Entry(root, width=10)
-    ent_argument1.grid(row=2, column=2, padx=4, pady=4)
+    ent_argument1.grid(row=3, column=2, padx=4, pady=4)
     ent_argument2 = tk.Entry(root, width=10)
-    ent_argument2.grid(row=2, column=3, padx=4, pady=4)
+    ent_argument2.grid(row=3, column=3, padx=4, pady=4)
 
 
     # Choose Operation
@@ -140,6 +151,12 @@ def gui_main():
         file_label.set(location_raw_sourcetext)
         print(f"File selected: {location_raw_sourcetext}")
 
+    def choose_dictionary_file():
+        global location_dictionary_file
+        location_dictionary_file = filedialog.askopenfilename(title="Select a File", initialdir=os.path.dirname(os.path.abspath(__file__)))
+        lbl_dictionarysourcetext.set(location_dictionary_file)
+        print(f"File selected: {location_dictionary_file}")
+
     # function to choose output file and store the location in a variable
     def choose_output_file():
         global location_output
@@ -149,9 +166,9 @@ def gui_main():
 
     txt_terminal = tk.Text(root, height=20, width=1000)
     txt_terminal.configure(state='normal')  # Add this line to enable the state of the txt_terminal widget
-    txt_terminal.grid(row=5, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
+    txt_terminal.grid(row=6, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
     root.grid_columnconfigure(1, weight=1)
-    root.grid_rowconfigure(4, weight=1)
+    root.grid_rowconfigure(6, weight=1)
     sys.stdout = CustomTextRedirector(txt_terminal)
     sys.stderr = CustomTextRedirector(txt_terminal)
     
@@ -176,6 +193,7 @@ def gui_main():
     async def run_script_async():
         operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
         source_path = os.path.normpath(location_raw_sourcetext)
+        dictionary_path = os.path.normpath(location_dictionary_file)
         destination_path = os.path.normpath(location_output)
         cli_command = ['lutherscripts-cli', '-o', operation_name, '-s', source_path, '-d', destination_path]
         # Add argument 1 and argument 2 for KWIC analysis
@@ -183,6 +201,10 @@ def gui_main():
             argument1 = ent_argument1.get()
             argument2 = ent_argument2.get()
             cli_command.extend(["-1", argument1, "-2", argument2])
+        if operation_name == "topic_modeling":
+            argument1 = ent_argument1.get()
+            argument2 = ent_argument2.get()
+            cli_command.extend(["-1", argument1, "-2", argument2, "-dc", dictionary_path])
 
         process = await asyncio.create_subprocess_exec(
             *cli_command,
@@ -233,6 +255,12 @@ def gui_main():
             argument2 = ent_argument2.get()
             if not argument1 or not argument2:
                 print("Please enter both Argument1 (Keyword) and argument2 (Context length, a number of words you want to see left and right of a keyword hit) for the KWIC analysis")
+                return
+        if operation_name == "topic_modeling":
+            argument1 = ent_argument1.get()
+            argument2 = ent_argument2.get()
+            if not argument1 or not argument2:
+                print("Please enter both Argument1 (Number of Topics) and argument2 (Number of Corpus Passes during LDA Training) ")
                 return
 
         # Start the animation thread

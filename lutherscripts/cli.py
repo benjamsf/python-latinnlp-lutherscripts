@@ -17,6 +17,7 @@ def add_arguments(parser):
     parser.add_argument("-1", "--first-detail", type=str, help="First detail flag for operation, depends on the operation")
     parser.add_argument("-2", "--second-detail", type=int, help="Second detail flag for operation, depends on the operation")
     parser.add_argument("-s", "--source-path", type=str, required=True, help="The path to the source text file")
+    parser.add_argument("-dc", "--dictionary-path", type=str, help="The path to the dictionary file, used by some NLP scripts")
     parser.add_argument("-d", "--destination-path", type=str, required=True, help="The path to the output file")
 
 def sentence_tokenize_latin(source_path, destination_path):
@@ -39,6 +40,16 @@ def freq_analysis(source_path, destination_path):
     output = nltk_do_freqanalysis(source_path, destination_path)
     print(output.encode('utf-8'))
 
+def build_corpus(source_path, destination_path):
+    from src.text_processing.gensim_corpus_builder import main as gensim_corpus_builder
+    output = gensim_corpus_builder(source_path, destination_path)
+    print(output.encode('utf-8'))
+
+def topic_modeling(num_topics, num_passes, source_path, dictionary_path, destination_path):
+    from src.text_processing.gensim_corpus_builder import main as gensim_corpus_builder
+    output = gensim_corpus_builder(source_path, destination_path)
+    print(output.encode('utf-8'))
+
 def cli_main():
     parser = argparse.ArgumentParser(description="Lutherscript operations launcher")
     add_arguments(parser)
@@ -56,10 +67,17 @@ def cli_main():
             print("Both -1 and -2 flags must be provided for the KWIC operation.")
         else:
             kwic_analysis(args.first_detail, args.second_detail, source_path, destination_path)
+    elif args.operation == 'topic_modeling':
+        if not args.first_detail or not args.second_detail:
+            print("Both -1 and -2 flags must be provided for the Topic Modeling operation.")
+        else:
+            topic_modeling(args.first_detail, args.second_detail, source_path, destination_path)
     elif args.operation == 'freq-analysis':
         freq_analysis(source_path, destination_path)
+    elif args.operation == 'build_corpus':
+        build_corpus(source_path, destination_path)
 
 if __name__ == '__main__':
     cli_main()
-
+ 
 
