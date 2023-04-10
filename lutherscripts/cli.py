@@ -51,6 +51,11 @@ def cli_main():
 
     source_path = os.path.abspath(args.source_path)
     destination_path = os.path.abspath(args.destination_path)
+    if args.dictionary_path is not None:
+        dictionary_path = os.path.abspath(args.dictionary_path)
+    else:
+        dictionary_path = None
+
 
     if args.operation == 'sent_tokenize_latin':
         sentence_tokenize_latin(source_path, destination_path)
@@ -65,7 +70,7 @@ def cli_main():
         if not args.first_detail or not args.second_detail:
             print("Both -1 and -2 flags must be provided for the Topic Modeling operation.")
         else:
-            topic_modeling(args.first_detail, args.second_detail, source_path, f"{os.path.abspath(args.dictionary_path)}", destination_path)
+            topic_modeling(args.first_detail, args.second_detail, source_path, dictionary_path, destination_path)
     elif args.operation == 'freq_analysis':
         freq_analysis(source_path, destination_path)
     elif args.operation == 'build_corpus':
