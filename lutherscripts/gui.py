@@ -8,7 +8,7 @@ import subprocess
 import pkg_resources
 from pathlib import Path
 import logging
-import queue
+import threading
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 import time
@@ -17,6 +17,7 @@ import time
 __author__ = "benjamsf"
 __license__ = "MIT"
 
+stop_flag = [False]
 
 class CustomTextRedirector:
     def __init__(self, widget):
@@ -217,12 +218,14 @@ def gui_main():
             txt_terminal.configure(state='disabled')
             txt_terminal.update()
 
-    def start_operation():
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        print("Starting operation...")
-        print("Please wait, this might take couple of seconds...")
+    def animate_luther(stop_flag):
+        while not stop_flag[0]:
+            update_image_label(lbl_luther_image, frames)
+            root.update()
+            time.sleep(interval)
 
+
+    def start_operation():
         # Check the selected operation and validate arguments for KWIC analysis
         operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
         if operation_name == "kwic_analysis":
@@ -231,16 +234,27 @@ def gui_main():
             if not argument1 or not argument2:
                 print("Please enter both Argument1 (Keyword) and argument2 (Context length, a number of words you want to see left and right of a keyword hit) for the KWIC analysis")
                 return
-        
-        while True:
-            update_image_label(lbl_luther_image, frames)
-            root.update()
-            time.sleep(interval)
-        
+
+        # Start the animation thread
+        stop_flag[0] = False
+        animation_thread = threading.Thread(target=animate_luther, args=(stop_flag,))
+        animation_thread.daemon = True
+        animation_thread.start()
+
+        print("Starting operation...")
+        print("Please wait, this might take couple of seconds...")
+
+        btn_play.configure(state='disabled')
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
         # Call the main function with the callback function
         loop.run_until_complete(run_script_async())
         loop.close()
-
+        btn_play.configure(state='normal')
+        stop_flag[0] = True
+        
     # Start Operation! button
     btn_play = tk.Button(root, text="Start Operation!", command=start_operation)
     btn_play.grid(row=6, column=3, padx=10, pady=10)
