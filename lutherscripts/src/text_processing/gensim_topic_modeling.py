@@ -31,7 +31,6 @@ def main(num_topics, num_passes, source_path, dictionary_path, destination_path)
                                                id2word=dictionary,
                                                num_topics=num_topics,
                                                passes=num_passes)
-        lda_model.log_perplexity = False  # Disable logging
 
     # Extract the topics and their associated words
     topics = []
