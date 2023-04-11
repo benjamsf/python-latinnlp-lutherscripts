@@ -11,7 +11,10 @@ __license__ = "MIT"
 def main(source_path, destination_path):
     # Load the tokenized text from the source file
     with open(source_path, 'r', encoding='utf-8') as f:
-        tokenized_text = json.load(f)
+        tokenized_documents = json.load(f)
+
+    # Extract tokens from the tokenized_documents
+    tokenized_text = [doc['tokens'] for doc in tokenized_documents]
 
     # Create a dictionary from the tokenized text
     dictionary = corpora.Dictionary(tqdm(tokenized_text, desc="Step 1 - Building dictionary:"))
