@@ -8,9 +8,12 @@ lutherscripts.egg-info/*
 
 # Sourcetext
 lutherscripts/txt/*.txt
+lutherscripts/txt/*.json
+lutherscripts/txt/*
 
 # Output text
 lutherscripts/output/*.txt
+lutherscripts/output/*
 
 # Output
 lutherscripts/output/*.pkl

@@ -20,9 +20,10 @@ def main(source_path, destination_path):
     print(dictionary)
     print("First 10 items:", list(dictionary.items())[:10])
 
+    # Save the dictionary using pickle
     dictionary_path = destination_path + '_dictionary.pkl'
     with open(dictionary_path, 'wb') as f:
-        pickle.dump(dictionary, f, protocol=pickle.HIGHEST_PROTOCOL, fix_imports=True)
+        pickle.dump(dictionary, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     # Convert the tokenized text into a corpus
     corpus = [dictionary.doc2bow(text) for text in tqdm(tokenized_text, desc="Step 2 - Building corpus:")]
@@ -33,4 +34,5 @@ def main(source_path, destination_path):
 
     # Print a message to confirm that the corpus has been saved
     print(f'The corpus has been saved as {corpus_path}')
+
 

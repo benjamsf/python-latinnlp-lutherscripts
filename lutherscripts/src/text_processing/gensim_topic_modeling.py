@@ -1,6 +1,7 @@
 import json
 import os
 import gensim
+import pickle
 from gensim import corpora
 from tqdm import tqdm
 
@@ -8,19 +9,29 @@ __author__ = "benjamsf"
 __license__ = "MIT"
 
 def main(num_topics, num_passes, source_path, dictionary_path, destination_path):
+
+    num_topics = int(num_topics)
+    num_passes = int(num_passes)
+
     # Load the corpus from the file
     corpus = gensim.corpora.MmCorpus(source_path)
 
     # Load the dictionary from the file
-    dictionary = corpora.Dictionary.load(dictionary_path)
+    with open(dictionary_path, 'rb') as f:
+        dictionary = pickle.load(f, encoding='utf-8', fix_imports=True)
 
-   # Train the LDA model on the corpus
+    #for debug
+    print("Dictionary after loading:")
+    print(dictionary)
+    print("First 10 items:", list(dictionary.items())[:10])
+
+    # Train the LDA model on the corpus
     with tqdm(desc="Step 1 - Training LDA model:", total=num_passes) as pbar:
         lda_model = gensim.models.LdaMulticore(corpus=corpus,
                                                id2word=dictionary,
                                                num_topics=num_topics,
-                                               passes=num_passes,
-                                               callbacks=[pbar.update])
+                                               passes=num_passes)
+        lda_model.log_perplexity = False  # Disable logging
 
     # Extract the topics and their associated words
     topics = []
