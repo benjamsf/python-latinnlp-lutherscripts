@@ -11,8 +11,8 @@ import re
 # Target text to projectfolder/txt/target_txt
 # Output text to projectfolder/txt/output_txt
 script_path = os.path.dirname(os.path.abspath(__file__))
-source_path = os.path.join(script_path, '../../txt/dsa.txt')
-destination_path = os.path.join(script_path, '../../output/dsa_prepared_1.txt')
+source_path = os.path.join(script_path, '../../txt/DSA_headline.txt')
+destination_path = os.path.join(script_path, '../../txt/DSA_ready.txt')
 
 # Load the text from the source file
 with open(source_path, 'r', encoding='utf-8') as f:
