@@ -36,9 +36,9 @@ def freq_analysis(source_path, destination_path):
     from src.text_processing.nltk_do_freqanalysis import main as nltk_do_freqanalysis
     output = nltk_do_freqanalysis(source_path, destination_path)
 
-def build_corpus(source_path, destination_path):
+def build_corpus(min_appeareance, max_appeareance, source_path, destination_path):
     from src.text_processing.gensim_corpus_builder import main as gensim_corpus_builder
-    output = gensim_corpus_builder(source_path, destination_path)
+    output = gensim_corpus_builder(min_appeareance, max_appeareance, source_path, destination_path)
 
 def topic_modeling(num_topics, num_passes, source_path, dictionary_path, destination_path):
     from src.text_processing.gensim_topic_modeling import main as gensim_topic_modeling
@@ -74,7 +74,10 @@ def cli_main():
     elif args.operation == 'freq_analysis':
         freq_analysis(source_path, destination_path)
     elif args.operation == 'build_corpus':
-        build_corpus(source_path, destination_path)
+        if not args.first_detail or not args.second_detail:
+            print("Both Arguments -1 as Word Minimum Appeareance, and -2 as Word Maximum Appearance, must be provided for the Build Corpus operation.")
+        else:
+            build_corpus(args.first_detail, args.second_detail, source_path, destination_path)
 
 if __name__ == '__main__':
     cli_main()

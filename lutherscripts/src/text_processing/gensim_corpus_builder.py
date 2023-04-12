@@ -19,7 +19,12 @@ def main(source_path, destination_path):
     # Create a dictionary from the tokenized text
     dictionary = corpora.Dictionary(tqdm(tokenized_text, desc="Step 1 - Building dictionary:"))
 
-    print("Dictionary before saving:")
+    # Filter extremes from the dictionary
+    no_below = 20  # Keep tokens that appear in at least this many documents
+    no_above = 0.5  # Keep tokens that appear in no more than this fraction of documents
+    dictionary.filter_extremes(no_below=no_below, no_above=no_above, keep_n=None)
+
+    print("Dictionary after filtering:")
     print(dictionary)
     print("First 10 items:", list(dictionary.items())[:10])
 
@@ -36,4 +41,3 @@ def main(source_path, destination_path):
 
     # Print a message to confirm that the corpus has been saved
     print(f'The corpus has been saved as {corpus_path}')
-
