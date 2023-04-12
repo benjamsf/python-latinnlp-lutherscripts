@@ -8,7 +8,7 @@ from tqdm import tqdm
 __author__ = "benjamsf"
 __license__ = "MIT"
 
-def main(source_path, destination_path):
+def main(min_appearance=None, max_appearance=None, source_path, destination_path):
     # Load the tokenized text from the source file
     with open(source_path, 'r', encoding='utf-8') as f:
         tokenized_documents = json.load(f)
@@ -19,13 +19,10 @@ def main(source_path, destination_path):
     # Create a dictionary from the tokenized text
     dictionary = corpora.Dictionary(tqdm(tokenized_text, desc="Step 1 - Building dictionary:"))
 
-    # Filter extremes from the dictionary
-    no_below = 20  # Keep tokens that appear in at least this many documents
-    no_above = 0.5  # Keep tokens that appear in no more than this fraction of documents
-    dictionary.filter_extremes(no_below=no_below, no_above=no_above, keep_n=None)
+    # Filter extremes from the dictionary only if min_appearance and max_appearance are provided
+    if min_appearance is not None and max_appearance is not None:
+        dictionary.filter_extremes(no_below=min_appearance, no_above=max_appearance, keep_n=None)
 
-    print("Dictionary after filtering:")
-    print(dictionary)
     print("First 10 items:", list(dictionary.items())[:10])
 
     dictionary_path = destination_path + '_dictionary.pkl'

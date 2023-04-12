@@ -126,12 +126,12 @@ def gui_main():
 
     def update_explanation(*args):
         explanations = {
-            "Tokenize Latin text by words": "This operation will tokenize your Latin text by words, which is required for further word-based natural language processing, using CLTK.",
-            "Tokenize Latin text by sentences": "This operation will tokenize your Latin text by sentences, which is useful for sentence-based natural language processing, using CLTK.",
+            "Tokenize Latin text by words": "This operation will tokenize your Latin text by words, which is required for further word-based natural language processing, using CLTK. You can manually segmentate the text via inserting a headline in a format #Detail,Otherdetail,Thirddetail# and end marker of the segment as #end#. That will be interpreted by the tokenizer as a single document, with metadata provided in the header",
+            "Tokenize Latin text by sentences": "This operation will tokenize your Latin text by sentences, which is useful for sentence-based natural language processing, using CLTK. As of dev version, not in the par of the other operations.",
             "Perform KWIC analysis from your JSON word tokenized text": "This operation will perform a Key Word in Context (KWIC) analysis, allowing you to see the occurrences of a word within the context of the text, using NLTK. Source must be a Word Tokenized text in JSON format.",
             "Perform word frequency analysis": "This operation will perform a Word Frequency Analysis, allowing you to see the number of times each word has been used in your target text, using NLTK. Source must be a Word Tokenized text in JSON format.",
-            "Build a dictionary and corpus from your JSON word tokenized text": "This operation will build a dictionary and a corpus from your Word Tokenized text in JSON format using GenSim, for to source further operations.",
-            "Perform Topic Modeling from your dictionary and corpus": "This operation will perform Topic Modeling using GenSim from your dictionary and corpus files. As Argument 1, pass the number of topics you want to try dig out from the text. As Argument 2, pass the number of passes to perform on the corpus."
+            "Build a dictionary and corpus from your JSON word tokenized text": "This operation will build a dictionary and a corpus from your Word Tokenized text in JSON format using GenSim, for to source further operations. As Arg 1 pass minimum appearance of a word in a document corpus to be accepted to the corpus, as Arg 2 pass the maximum in a fraction of a document to do the same.",
+            "Perform Topic Modeling from your dictionary and corpus": "This operation will perform Topic Modeling using GenSim from your dictionary and corpus files. As Argument 1, pass the number of topics you want to try dig out from the text. As Argument 2, pass the number of passes to perform on the corpus. Test different values both here and during the corpus building for to achieve accuracy."
         }
 
         selected_operation = var_operation.get()
@@ -199,6 +199,10 @@ def gui_main():
             argument1 = ent_argument1.get()
             argument2 = ent_argument2.get()
             cli_command.extend(["-1", argument1, "-2", argument2, "-dc", dictionary_path])
+        if operation_name == "build_corpus":
+            argument1 = ent_argument1.get()
+            argument2 = ent_argument2.get()
+            cli_command.extend(["-1", argument1, "-2", argument2])
 
         process = await asyncio.create_subprocess_exec(
             *cli_command,

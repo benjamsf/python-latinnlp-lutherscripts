@@ -74,10 +74,7 @@ def cli_main():
     elif args.operation == 'freq_analysis':
         freq_analysis(source_path, destination_path)
     elif args.operation == 'build_corpus':
-        if not args.first_detail or not args.second_detail:
-            print("Both Arguments -1 as Word Minimum Appeareance, and -2 as Word Maximum Appearance, must be provided for the Build Corpus operation.")
-        else:
-            build_corpus(args.first_detail, args.second_detail, source_path, destination_path)
+        build_corpus(args.first_detail, args.second_detail, source_path, destination_path)
 
 if __name__ == '__main__':
     cli_main()
