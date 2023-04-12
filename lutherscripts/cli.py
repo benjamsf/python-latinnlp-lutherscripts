@@ -13,11 +13,11 @@ sys.path.append(str(file_path.parent))
 
 
 def add_arguments(parser):
-    parser.add_argument("-o", "--operation", type=str, choices=["word_tokenize_latin", "sent_tokenize_latin", "kwic_analysis", "freq_analysis", "build_corpus", "topic_modeling"], required=True, help="Choose operation: word_tokenize_latin, sent_tokenize_latin, or kwic")
-    parser.add_argument("-1", "--first-detail", type=str, help="First detail flag for operation, depends on the operation")
-    parser.add_argument("-2", "--second-detail", type=int, help="Second detail flag for operation, depends on the operation")
-    parser.add_argument("-s", "--source-path", type=str, required=True, help="The path to the source text file")
+    parser.add_argument("-o", "--operation", type=str, choices=["word_tokenize_latin", "sent_tokenize_latin", "kwic_analysis", "freq_analysis", "build_corpus", "topic_modeling"], required=True, help="Choose operation: word_tokenize_latin, sent_tokenize_latin, kwic_analysis, corpus_builder or topic_modeler")
+    parser.add_argument("-1", "--first-detail", type=float, help="First detail flag for operation, depends on the operation")
+    parser.add_argument("-2", "--second-detail", type=float, help="Second detail flag for operation, depends on the operation")
     parser.add_argument("-dc", "--dictionary-path", type=str, help="The path to the dictionary file, used by some NLP scripts")
+    parser.add_argument("-s", "--source-path", type=str, required=True, help="The path to the source text file")
     parser.add_argument("-d", "--destination-path", type=str, required=True, help="The path to the output file")
 
 def sentence_tokenize_latin(source_path, destination_path):
@@ -36,9 +36,11 @@ def freq_analysis(source_path, destination_path):
     from src.text_processing.nltk_do_freqanalysis import main as nltk_do_freqanalysis
     output = nltk_do_freqanalysis(source_path, destination_path)
 
-def build_corpus(min_appeareance, max_appeareance, source_path, destination_path):
+def build_corpus(first_detail, second_detail, source_path, destination_path):
     from src.text_processing.gensim_corpus_builder import main as gensim_corpus_builder
-    output = gensim_corpus_builder(min_appeareance, max_appeareance, source_path, destination_path)
+    min_appearance = int(first_detail)
+    max_appearance = int(second_detail)  # Cast to float
+    output = gensim_corpus_builder(min_appearance, max_appearance, source_path, destination_path)
 
 def topic_modeling(num_topics, num_passes, source_path, dictionary_path, destination_path):
     from src.text_processing.gensim_topic_modeling import main as gensim_topic_modeling
