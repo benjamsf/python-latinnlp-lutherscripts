@@ -8,7 +8,7 @@ from tqdm import tqdm
 __author__ = "benjamsf"
 __license__ = "MIT"
 
-def main(min_appearance=None, max_appearance=None, source_path, destination_path):
+def main(source_path, destination_path, min_appearance=None, max_appearance=None):
     # Load the tokenized text from the source file
     with open(source_path, 'r', encoding='utf-8') as f:
         tokenized_documents = json.load(f)
