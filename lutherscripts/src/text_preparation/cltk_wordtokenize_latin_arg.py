@@ -7,6 +7,7 @@ import logging
 import sys
 import io
 from cltk.stops.lat import STOPS as LATIN_STOPS
+from lutherscripts.src.data.extrastopwords import extrastopwords_lat as EXTRA_STOPS
 from cltk.lemmatize.lat import LatinBackoffLemmatizer
 import re
 
@@ -56,7 +57,7 @@ def main(source_path, destination_path, progress_callback=None):
             doc = cltk_nlp(chunk)
             for word in doc.words:
                 lemma = latin_lemmatizer.lemmatize([word.string])[0][1].lower()
-                if lemma not in LATIN_STOPS and len(lemma) > 2:
+                if lemma not in LATIN_STOPS and lemma not in EXTRA_STOPS and len(lemma) > 2:
                     word_tokens.append(lemma)
 
         document_tokens.append({"metadata": metadata, "tokens": word_tokens})
