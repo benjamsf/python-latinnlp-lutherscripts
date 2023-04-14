@@ -11,7 +11,6 @@ from lutherscripts.src.data.extrastopwords import extrastopwords_lat as EXTRA_ST
 from cltk.lemmatize.lat import LatinBackoffLemmatizer
 import re
 
-
 def main(source_path, destination_path, progress_callback=None):
     logging.basicConfig(level=logging.INFO)
     # Instantiate a Latin-specific NLP object
@@ -46,10 +45,13 @@ def main(source_path, destination_path, progress_callback=None):
 
         # Remove punctuation marks, digits, and special characters from the document
         document_no_punctuation = re.sub(r'[^\w\s]', '', document)
-        document_no_digits = re.sub(r'\d+', '', document_no_punctuation)
+
+        # Find all numerals that are not within metadata and remove them
+        num_pattern = r'(?<!#metadata.*?)(\d+)(?!.*?#end#)'
+        document_no_numerals = re.sub(num_pattern, '', document_no_punctuation)
 
         # Split the document into smaller chunks
-        text_chunks = document_no_digits.split()
+        text_chunks = document_no_numerals.split()
 
         # Process the text_chunks with cltk_nlp and update the progress bar
         word_tokens = []
@@ -69,6 +71,7 @@ def main(source_path, destination_path, progress_callback=None):
 
     # Print a message to confirm that the file has been saved
     print(f'The tokenized output has been saved as {destination_path}')
+
 
 
 

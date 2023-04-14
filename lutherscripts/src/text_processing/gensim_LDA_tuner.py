@@ -6,6 +6,9 @@ import json
 from tqdm import tqdm
 from random import randint, uniform
 
+# function to automatically tune hyperparameters alpha and eta for the LDA Topic Modeler
+# implementation: random search, needs the input of iterations to be tried
+
 def tune_hyperparameters(num_topics, num_passes, num_iterations, source_path, corpus_path, dictionary_path):
     # Load the corpus from the file
     corpus = gensim.corpora.MmCorpus(corpus_path)
@@ -40,11 +43,18 @@ def tune_hyperparameters(num_topics, num_passes, num_iterations, source_path, co
                                                passes=num_passes)
 
         # Compute the coherence score for the current hyperparameters
-        coherence_model = CoherenceModel(model=lda_model, texts=tokenized_documents, dictionary=dictionary, coherence='u_mass')
-        coherence_score = coherence_model.get_coherence()
+        coherence_model_umass = CoherenceModel(model=lda_model, texts=tokenized_documents, dictionary=dictionary, coherence='u_mass')
+        coherence_model_cv = CoherenceModel(model=lda_model, texts=tokenized_documents, dictionary=dictionary, coherence='c_v')
+        coherence_model_uci = CoherenceModel(model=lda_model, texts=tokenized_documents, dictionary=dictionary, coherence='c_uci')
+        coherence_model_npmi = CoherenceModel(model=lda_model, texts=tokenized_documents, dictionary=dictionary, coherence='c_npmi')
+        coherence_score_umass = coherence_model_umass.get_coherence()
+        coherence_score_cv = coherence_model_cv.get_coherence()
+        coherence_score_uci = coherence_model_uci.get_coherence()
+        coherence_score_npmi = coherence_model_npmi.get_coherence()
+        avg_coherence_score = (coherence_score_umass + coherence_score_cv + coherence_score_uci + coherence_score_npmi) / 4
 
         # Append the coherence score to the list of scores
-        coherence_scores.append((alpha, eta, coherence_score))
+        coherence_scores.append((alpha, eta, avg_coherence_score))
 
     # Find the hyperparameters with the highest coherence score
     best_alpha, best_eta, best_score = max(coherence_scores, key=lambda x: x[2])
@@ -53,3 +63,4 @@ def tune_hyperparameters(num_topics, num_passes, num_iterations, source_path, co
     print(f'Best alpha: {best_alpha}, best eta: {best_eta}, best coherence score achieved: {best_score}')
 
     return best_alpha, best_eta
+
