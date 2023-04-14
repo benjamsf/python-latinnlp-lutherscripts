@@ -17,7 +17,8 @@ def add_arguments(parser):
     parser.add_argument("-1", "--first-detail", type=float, help="First detail flag for operation, depends on the operation")
     parser.add_argument("-2", "--second-detail", type=float, help="Second detail flag for operation, depends on the operation")
     parser.add_argument("-dc", "--dictionary-path", type=str, help="The path to the dictionary file, used by some NLP scripts")
-    parser.add_argument("-s", "--source-path", type=str, required=True, help="The path to the source text file")
+    parser.add_argument("-c", "--corpus-path", type=str, help="The path to the corpus file, used by some NLP scripts")
+    parser.add_argument("-s", "--source-path", type=str, required=True, help="The path to the source file, either raw text or a tokenized json file")
     parser.add_argument("-d", "--destination-path", type=str, required=True, help="The path to the output file")
 
 def sentence_tokenize_latin(source_path, destination_path):
@@ -36,15 +37,15 @@ def freq_analysis(source_path, destination_path):
     from src.text_processing.nltk_do_freqanalysis import main as nltk_do_freqanalysis
     output = nltk_do_freqanalysis(source_path, destination_path)
 
-def build_corpus(first_detail, second_detail, source_path, destination_path):
+def build_corpus(source_path, destination_path, first_detail=None, second_detail=None):
     from src.text_processing.gensim_corpus_builder import main as gensim_corpus_builder
-    min_appearance = int(first_detail)
-    max_appearance = int(second_detail)  # Cast to float
-    output = gensim_corpus_builder(min_appearance, max_appearance, source_path, destination_path)
+    min_appearance = int(first_detail) if first_detail else None
+    max_appearance = int(second_detail) if second_detail else None
+    output = gensim_corpus_builder(source_path, destination_path, min_appearance, max_appearance)
 
-def topic_modeling(num_topics, num_passes, source_path, dictionary_path, destination_path):
+def topic_modeling(num_topics, num_passes, source_path, corpus_path, dictionary_path, destination_path):
     from src.text_processing.gensim_topic_modeling import main as gensim_topic_modeling
-    output = gensim_topic_modeling(num_topics, num_passes, source_path, dictionary_path, destination_path)
+    output = gensim_topic_modeling(num_topics, num_passes, source_path, corpus_path, dictionary_path, destination_path)
 
 def cli_main():
     parser = argparse.ArgumentParser(description="Lutherscript operations launcher")
@@ -57,7 +58,10 @@ def cli_main():
         dictionary_path = os.path.abspath(args.dictionary_path)
     else:
         dictionary_path = None
-
+    if args.corpus_path is not None:  
+        corpus_path = os.path.abspath(args.corpus_path)
+    else:
+        corpus_path = None
 
     if args.operation == 'sent_tokenize_latin':
         sentence_tokenize_latin(source_path, destination_path)
@@ -69,14 +73,15 @@ def cli_main():
         else:
             kwic_analysis(args.first_detail, args.second_detail, source_path, destination_path)
     elif args.operation == 'topic_modeling':
-        if not args.first_detail or not args.second_detail:
-            print("Both -1 and -2 flags must be provided for the Topic Modeling operation.")
+        if not args.first_detail or not args.second_detail or not args.corpus_path or not args.dictionary_path:
+            print("Flags -1, -2 -dc and -c must be provided for the Topic Modeling operation.")
         else:
-            topic_modeling(args.first_detail, args.second_detail, source_path, dictionary_path, destination_path)
+            topic_modeling(args.first_detail, args.second_detail, source_path, corpus_path, dictionary_path, destination_path)
     elif args.operation == 'freq_analysis':
         freq_analysis(source_path, destination_path)
     elif args.operation == 'build_corpus':
-        build_corpus(args.first_detail, args.second_detail, source_path, destination_path)
+        build_corpus(source_path, destination_path, args.first_detail, args.second_detail)
+
 
 if __name__ == '__main__':
     cli_main()

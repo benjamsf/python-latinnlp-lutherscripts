@@ -9,6 +9,7 @@ __author__ = "benjamsf"
 __license__ = "MIT"
 
 def main(source_path, destination_path, min_appearance=None, max_appearance=None):
+    print(f"{source_path}, {destination_path}, {min_appearance}, {max_appearance}")
     # Load the tokenized text from the source file
     with open(source_path, 'r', encoding='utf-8') as f:
         tokenized_documents = json.load(f)
