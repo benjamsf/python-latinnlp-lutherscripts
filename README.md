@@ -3,20 +3,38 @@
 MIT-License, (c) Benjam Bröijer (u:benjamsf)
 
 ## What
-Collection of Python scripts to perform Natural Language Processing (NLP) on Latin source text supplied by the user. Support for source text from Luther's Werke im WWW, a Weimarer Ausgabe -rendition offered by ProQuest, LLC, but you could use these for any Latin text you specifically provide yourself in UTF-8 .txt-files.
+A Python suite to perform Natural Language Processing (NLP), on a Latin source text supplied by the user. Support included for source text from Luther's Werke im WWW, a Weimarer Ausgabe -rendition offered by ProQuest, LLC, but you could use these for any Latin text you specifically provide yourself in UTF-8 .txt-files.
 
 ## Why
 I noticed that while the tools to do the actual hard work are present and available, I found no ready scripts to do the kind of a trivial work to tokenize and analyze a Latin text that is not from eg. LatinCorpus by CLTK itself. So I made these for my thesis work, and made them public in case anybody else needs to do similar tasks. 
 
 ## How
-I update the documentation as I grow the tools. By now there are capabilities to prepare text from Luther's Werke im WWW, and to tokenize words. I intend to make this library easy to install and use.
+I update the documentation as I grow the tools. I intend to make this library easy to install and use.
 
-## As per development version 0.2.0
+## As per development version 0.3.0
 
 ### Features
-- Word tokenization from Latin source text
-- Sentence tokenization from Latin source text
-- Working CLI, working but WIP GUI
+**From CLI:**
+- Word tokenization, including:
+- - Lemmatization
+- - Stopword filtering
+- - Reading and storing, if supplied, metadata from the source text file, metadata form: #metadata,as,much,here,as,you,want# document #end# #next,document,metadata# document2 #end#, to the word tokenized file
+- Corpus builder, including:
+- - Building a dictionary saved to a Pickle, and a corpus saved to a MatrixMarket file, from a word tokenized json file
+- Topic modeler, including:
+- - Parameters: Number of topics to be generated, Number of passes on the corpus to find the topics, Number of iterations of the automated hyperparameter function, Source word tokenized file, Source corpus file, Source dictionary file
+- - Automatic hyperparameter tuning processes (Random Search method implemented)
+- - Topics generetion
+- - Topic distribution
+- - Document topic distribution
+- - Word topic distribution
+- - Coherence score
+
+**From GUI:**
+- Word tokenization
+- Corpus builder
+- Implement the rest once the actual functions are mature enough, so that I don't need to mess with the gui code repeatedly
+- Luther's eyes reading a book when an operation is running
 
 ### Operation instructions
 1. install via pip install python-latinnlp-lutherscripts/
