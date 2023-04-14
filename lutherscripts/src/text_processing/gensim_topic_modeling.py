@@ -60,7 +60,7 @@ def main(num_topics, num_passes, source_path, corpus_path, dictionary_path, dest
     results = {
         'topics': topics,
         'topic_distribution': topic_distribution.tolist(),
-        'doc_topic_distribution': [{k: float(v) for k, v in doc_topics.items()} for doc_topics in doc_topic_distribution],
+        'doc_topic_distribution': [{k: float(v) if k != 'metadata' else v for k, v in doc_topics.items()} for doc_topics in doc_topic_distribution],
         'word_topic_distribution': {k: {w: float(p) for w, p in topic_probs} for k, topic_probs in word_topic_distribution.items()},
         'coherence_score': coherence_score
     }
