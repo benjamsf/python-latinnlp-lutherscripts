@@ -16,6 +16,7 @@ def add_arguments(parser):
     parser.add_argument("-o", "--operation", type=str, choices=["word_tokenize_latin", "sent_tokenize_latin", "kwic_analysis", "freq_analysis", "build_corpus", "topic_modeling"], required=True, help="Choose operation: word_tokenize_latin, sent_tokenize_latin, kwic_analysis, corpus_builder or topic_modeler")
     parser.add_argument("-1", "--first-detail", type=float, help="First detail flag for operation, depends on the operation")
     parser.add_argument("-2", "--second-detail", type=float, help="Second detail flag for operation, depends on the operation")
+    parser.add_argument("-3", "--third-detail", type=int, help="Third detail flag for operation, depends on the operation")
     parser.add_argument("-dc", "--dictionary-path", type=str, help="The path to the dictionary file, used by some NLP scripts")
     parser.add_argument("-c", "--corpus-path", type=str, help="The path to the corpus file, used by some NLP scripts")
     parser.add_argument("-s", "--source-path", type=str, required=True, help="The path to the source file, either raw text or a tokenized json file")
@@ -43,9 +44,9 @@ def build_corpus(source_path, destination_path, first_detail=None, second_detail
     max_appearance = int(second_detail) if second_detail else None
     output = gensim_corpus_builder(source_path, destination_path, min_appearance, max_appearance)
 
-def topic_modeling(num_topics, num_passes, source_path, corpus_path, dictionary_path, destination_path):
+def topic_modeling(num_topics, num_passes, num_iterations, source_path, corpus_path, dictionary_path, destination_path):
     from src.text_processing.gensim_topic_modeling import main as gensim_topic_modeling
-    output = gensim_topic_modeling(num_topics, num_passes, source_path, corpus_path, dictionary_path, destination_path)
+    output = gensim_topic_modeling(num_topics, num_passes, num_iterations, source_path, corpus_path, dictionary_path, destination_path)
 
 def cli_main():
     parser = argparse.ArgumentParser(description="Lutherscript operations launcher")
@@ -73,10 +74,10 @@ def cli_main():
         else:
             kwic_analysis(args.first_detail, args.second_detail, source_path, destination_path)
     elif args.operation == 'topic_modeling':
-        if not args.first_detail or not args.second_detail or not args.corpus_path or not args.dictionary_path:
-            print("Flags -1, -2 -dc and -c must be provided for the Topic Modeling operation.")
+        if not args.first_detail or not args.second_detail or not args.third_detail or not args.corpus_path or not args.dictionary_path:
+            print("Flags -1 number of topics, -2 number of passes, -3 number of hyperargument training iterations, -dc dictionary location and -c corpus location must be provided for the Topic Modeling operation.")
         else:
-            topic_modeling(args.first_detail, args.second_detail, source_path, corpus_path, dictionary_path, destination_path)
+            topic_modeling(args.first_detail, args.second_detail, args.third_detail, source_path, corpus_path, dictionary_path, destination_path)
     elif args.operation == 'freq_analysis':
         freq_analysis(source_path, destination_path)
     elif args.operation == 'build_corpus':

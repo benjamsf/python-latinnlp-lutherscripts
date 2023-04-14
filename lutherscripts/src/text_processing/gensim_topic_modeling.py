@@ -2,11 +2,12 @@ import json
 import os
 import gensim
 import pickle
+from lutherscripts.src.text_processing.gensim_LDA_tuner import tune_hyperparameters
 from gensim import corpora
 from gensim.models import CoherenceModel
 from tqdm import tqdm
 
-def main(num_topics, num_passes, source_path, corpus_path, dictionary_path, destination_path):
+def main(num_topics, num_passes, num_iterations, source_path, corpus_path, dictionary_path, destination_path):
 
     num_topics = int(num_topics)
     num_passes = int(num_passes)
@@ -22,12 +23,16 @@ def main(num_topics, num_passes, source_path, corpus_path, dictionary_path, dest
     with open(source_path, 'r', encoding='utf-8') as f:
         tokenized_documents = json.load(f)
 
-    # Train the LDA model on the corpus
-    with tqdm(desc="Step 1 - Training LDA model:", total=num_passes) as pbar:
-        lda_model = gensim.models.LdaMulticore(corpus=corpus,
-                                               id2word=dictionary,
-                                               num_topics=num_topics,
-                                               passes=num_passes)
+    # Tune hyperparameters
+    best_alpha, best_eta = tune_hyperparameters(num_topics, num_passes, num_iterations, source_path, corpus_path, dictionary_path)
+
+    # Train the LDA model on the corpus with the best hyperparameters
+    lda_model = gensim.models.LdaMulticore(corpus=corpus,
+                                        id2word=dictionary,
+                                        num_topics=num_topics,
+                                        alpha=best_alpha,
+                                        eta=best_eta,
+                                        passes=num_passes)
 
     # Extract the topics and their associated words
     topics = []
