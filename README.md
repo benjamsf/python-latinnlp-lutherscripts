@@ -13,15 +13,21 @@ I update the documentation as I grow the tools. I intend to make this library ea
 
 ## As per development version 0.3.0
 
-### Features
-**From CLI:**
-- Word tokenization, including:
+## Features
+### From the CLI:
+
+**Word tokenization**, including:
 - - Lemmatization
 - - Stopword filtering
 - - Reading and storing, if supplied, metadata from the source text file, metadata form: #metadata,as,much,here,as,you,want# document #end# #next,document,metadata# document2 #end#, to the word tokenized file
-- Corpus builder, including:
+
+**Example cli command:**
+lutherscripts-cli -o word_tokenize_latin -s lutherscripts/txt/your_input.txt -d lutherscripts/output/your_wordtokenized.json
+
+**Corpus builder**, including:
 - - Building a dictionary saved to a Pickle, and a corpus saved to a MatrixMarket file, from a word tokenized json file
-- Topic modeler, including:
+
+**Topic modeler**, including:
 - - Parameters: Number of topics to be generated, Number of passes on the corpus to find the topics, Number of iterations of the automated hyperparameter function, Source word tokenized file, Source corpus file, Source dictionary file
 - - Automatic hyperparameter tuning processes (Random Search method implemented)
 - - Topics generetion
@@ -29,6 +35,9 @@ I update the documentation as I grow the tools. I intend to make this library ea
 - - Document topic distribution
 - - Word topic distribution
 - - Coherence score
+
+**Example cli command:**
+lutherscripts-cli -o topic_modeling -1 3 -2 30 -3 100 -s lutherscripts/txt/your_wordtokenized.json -c lutherscripts/output/your_input_corpus.mm -dc lutherscripts/output/your_input_dictionary.pkl -d lutherscripts/output/your_intended_output_results.json
 
 **From GUI:**
 - Word tokenization
