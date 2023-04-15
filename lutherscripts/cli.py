@@ -77,14 +77,14 @@ def cli_main():
             print("Both -1 and -2 flags must be provided for the KWIC operation.")
         else:
             kwic_analysis(args.first_detail, args.second_detail, source_path, destination_path)
-    elif args.operation == 'topic_modeling':
+    elif args.operation == 'word_document_probability':
         if not args.first_detail or not args.second_detail or not args.third_detail or not args.corpus_path or not args.dictionary_path:
-            print("Flags -1 number of topics, -2 number of passes, -3 number of hyperargument training iterations, -dc dictionary location and -c corpus location must be provided for the Topic Modeling operation.")
+            print("Flags -dc dictionary location and -c corpus location must be provided for the Word Document Probability operation.")
         else:
             topic_modeling(source_path, corpus_path, dictionary_path, destination_path)
-    elif args.operation == 'word_document_probability':
+    elif args.operation == 'topic_modeling':
         if not args.corpus_path or not args.dictionary_path:
-            print("-dc dictionary location and -c corpus location must be provided for the Topic Modeling operation.")
+            print("Flags -1 number of topics, -2 number of passes, -3 number of hyperargument training iterations, -dc dictionary location and -c corpus location must be provided for the Topic Modeling operation.")
         else:
             topic_modeling(args.first_detail, args.second_detail, args.third_detail, source_path, corpus_path, dictionary_path, destination_path)
     elif args.operation == 'freq_analysis':

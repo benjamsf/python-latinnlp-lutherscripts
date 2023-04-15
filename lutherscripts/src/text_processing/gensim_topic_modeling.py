@@ -49,11 +49,12 @@ def main(num_topics, num_passes, num_iterations, source_path, corpus_path, dicti
     # Map word IDs to their respective words
     id2word = dictionary.id2token
 
-    #  Calculate topic distribution
+    # Calculate topic distribution (how probable it is for each word to appear in a topic)
     topic_distribution = []
     for topic_num, topic_prob in enumerate(lda_model.get_topics()):
         words_probs = [{'word': id2word[word_id], 'probability': prob} for word_id, prob in enumerate(topic_prob)]
-        topic_distribution.append({f'topic_{topic_num}': words_probs})
+        sorted_words_probs = sorted(words_probs, key=lambda x: x['probability'], reverse=True)
+        topic_distribution.append({f'topic_{topic_num}': sorted_words_probs})
 
     # Create a dictionary of the word-topic distribution with words as keys
     word_topic_distribution = {}
