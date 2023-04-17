@@ -12,7 +12,7 @@ if "install" in sys.argv or "develop" in sys.argv:
 
 setup(
     name="lutherscripts",
-    version="0.1.0",
+    version="0.3.1",
     description="Collection of NLP scripts to analyze your UTF-8 Latin text from a textfile",
     author="Benjam Bröijer",
     author_email="benjam.broijer@roadsign.fi",

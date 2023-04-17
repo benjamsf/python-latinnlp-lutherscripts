@@ -12,6 +12,7 @@ from cltk.lemmatize.lat import LatinBackoffLemmatizer
 import re
 
 def main(source_path, destination_path, progress_callback=None):
+
     logging.basicConfig(level=logging.INFO)
     # Instantiate a Latin-specific NLP object
     cltk_nlp = NLP(language="lat")
