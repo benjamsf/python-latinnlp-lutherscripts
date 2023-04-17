@@ -9,7 +9,7 @@ import numpy as np
 # 1) the probability to appear compared to the word's appearance in the whole corpus, 
 # 2) the probability to appear compared to all words in this document. 
 
-def main(corpus_path, dictionary_path, source_path):
+def main(corpus_path, dictionary_path, source_path, destination_path):
     
     # Load the corpus from the file
     corpus = gensim.corpora.MmCorpus(corpus_path)
