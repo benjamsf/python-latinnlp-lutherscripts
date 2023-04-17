@@ -9,7 +9,7 @@ import numpy as np
 # 1) the probability to appear compared to the word's appearance in the whole corpus, 
 # 2) the probability to appear compared to all words in this document. 
 
-def main(corpus_path, dictionary_path, source_path, destination_path):
+def main(source_path, corpus_path, dictionary_path, destination_path):
     
     # Load the corpus from the file
     corpus = gensim.corpora.MmCorpus(corpus_path)
@@ -59,5 +59,10 @@ def main(corpus_path, dictionary_path, source_path, destination_path):
                 'corpus_prob': word_corpus_prob
             })
     
-    # Return the word probabilities dictionary
-    return word_probs
+    # Save the word probabilities dictionary to a JSON file
+    with open(destination_path, 'w', encoding='utf-8') as f:
+        json.dump(word_probs, f, ensure_ascii=False, indent=4)
+    print(f'The word probability analysis results have been saved as {destination_path}')
+
+    
+
