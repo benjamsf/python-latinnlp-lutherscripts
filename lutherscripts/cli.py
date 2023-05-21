@@ -13,7 +13,7 @@ sys.path.append(str(file_path.parent))
 
 
 def add_arguments(parser):
-    parser.add_argument("-o", "--operation", type=str, choices=["word_tokenize_latin", "sent_tokenize_latin", "kwic_analysis", "freq_analysis", "build_corpus", "topic_modeling", "word_document_probability"], required=True, help="Choose operation: word_tokenize_latin, sent_tokenize_latin, kwic_analysis, corpus_builder, topic_modeler or word_document_probability")
+    parser.add_argument("-o", "--operation", type=str, choices=["word_tokenize_latin", "sent_tokenize_latin", "kwic_analysis", "freq_analysis", "build_corpus", "topic_modeling", "word_document_probability", "export_docs"], required=True, help="Choose operation: word_tokenize_latin, sent_tokenize_latin, kwic_analysis, corpus_builder, topic_modeler, export_docs or word_document_probability")
     parser.add_argument("-1", "--first-detail", type=float, help="First detail flag for operation, depends on the operation")
     parser.add_argument("-2", "--second-detail", type=float, help="Second detail flag for operation, depends on the operation")
     parser.add_argument("-3", "--third-detail", type=int, help="Third detail flag for operation, depends on the operation")
@@ -51,6 +51,10 @@ def topic_modeling(num_topics, num_passes, num_iterations, source_path, corpus_p
 def word_document_probability(source_path, corpus_path, dictionary_path, destination_path):
     from src.text_processing.gensim_word_document_probability import main as gensim_word_document_probability
     output = gensim_word_document_probability(source_path, corpus_path, dictionary_path, destination_path)
+
+def export_docs(source_path, destination_path)
+    from src.text_preparation.python_createseparatefiles_from_metadata import main as export_docs
+    output = export_docs(source_path, destination_path)
 
 def cli_main():
     parser = argparse.ArgumentParser(description="Lutherscript operations launcher")
@@ -91,9 +95,9 @@ def cli_main():
         freq_analysis(source_path, destination_path)
     elif args.operation == 'build_corpus':
         build_corpus(source_path, destination_path, args.first_detail, args.second_detail)
+    elif args.operation == 'export_docs':
+        export_docs(source_path, destination_path)
 
 
 if __name__ == '__main__':
     cli_main()
- 
-
