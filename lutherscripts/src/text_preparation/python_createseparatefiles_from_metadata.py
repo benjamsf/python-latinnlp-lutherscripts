@@ -1,18 +1,28 @@
 import json
+import os
+from tqdm import tqdm  # Import the tqdm function for the progress bar
 
-# A little script to save documents from the json corpus as 
-# separate files, for to work with certain 3rd party tools like Voyant
-
-
-def save_documents_to_files(source_path, destination_path):
-    # Load the corpus from json
+def main(source_path, destination_path):
+    # Ensure the destination directory exists
+    os.makedirs(destination_path, exist_ok=True)
+    
+    # Load the corpus from JSON
     with open(source_path, 'r') as f:
         documents = json.load(f)
 
-    for i, document in enumerate(documents):
-        # Replace "metadata" with "title"
-        document['title'] = document.pop('metadata')
+    # Process each document with a progress bar
+    for i, document in tqdm(enumerate(documents), total=len(documents), desc="Processing documents"):
+        # Extract the title ("metadata") and the document body ("tokens")
+        title = document.get('metadata', f'Document {i}')  # Use a default title if missing
+        body = ', '.join(document.get('tokens', []))  # Convert tokens list to string, with commas
 
-        # Save each document as independent file
-        with open(os.path.join(destination_path, f'document_{i}.json'), 'w') as f:
-            json.dump(document, f)
+        # Combine the title and the body with two newlines in between
+        content = f"{title}\n\n{body}"
+
+        # Save each document as a separate .txt file
+        filename = os.path.join(destination_path, f'document_{i}.txt')
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(content)
+
+    print(f'The JSON has been exported to separate txt documents at {destination_path}.')
+

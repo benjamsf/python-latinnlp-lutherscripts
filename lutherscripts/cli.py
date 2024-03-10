@@ -52,7 +52,7 @@ def word_document_probability(source_path, corpus_path, dictionary_path, destina
     from src.text_processing.gensim_word_document_probability import main as gensim_word_document_probability
     output = gensim_word_document_probability(source_path, corpus_path, dictionary_path, destination_path)
 
-def export_docs(source_path, destination_path)
+def export_docs(source_path, destination_path):
     from src.text_preparation.python_createseparatefiles_from_metadata import main as export_docs
     output = export_docs(source_path, destination_path)
 

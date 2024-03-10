@@ -121,7 +121,8 @@ def gui_main():
         ("kwic_analysis", "Perform KWIC analysis from your JSON word tokenized text"),
         ("freq_analysis", "Perform word frequency analysis from your JSON word tokenized text"),    
         ("build_corpus", "Build a dictionary and corpus from your JSON word tokenized text"),
-        ("topic_modeling", "Perform Topic Modeling from your dictionary and corpus")
+        ("topic_modeling", "Perform Topic Modeling from your dictionary and corpus"),
+        ("export_docs", "Export the tokenized JSON to multiple txt documents")
         ]
 
     def update_explanation(*args):
@@ -131,7 +132,8 @@ def gui_main():
             "Perform KWIC analysis from your JSON word tokenized text": "This operation will perform a Key Word in Context (KWIC) analysis, allowing you to see the occurrences of a word within the context of the text, using NLTK. Source must be a Word Tokenized text in JSON format.",
             "Perform word frequency analysis": "This operation will perform a Word Frequency Analysis, allowing you to see the number of times each word has been used in your target text, using NLTK. Source must be a Word Tokenized text in JSON format.",
             "Build a dictionary and corpus from your JSON word tokenized text": "This operation will build a dictionary and a corpus from your Word Tokenized text in JSON format using GenSim, for to source further operations. As Arg 1 pass minimum appearance of a word in a document corpus to be accepted to the corpus, as Arg 2 pass the maximum in a fraction of a document to do the same.",
-            "Perform Topic Modeling from your dictionary and corpus": "This operation will perform Topic Modeling using GenSim from your dictionary and corpus files. As Argument 1, pass the number of topics you want to try dig out from the text. As Argument 2, pass the number of passes to perform on the corpus. Test different values both here and during the corpus building for to achieve accuracy."
+            "Perform Topic Modeling from your dictionary and corpus": "This operation will perform Topic Modeling using GenSim from your dictionary and corpus files. As Argument 1, pass the number of topics you want to try dig out from the text. As Argument 2, pass the number of passes to perform on the corpus. Test different values both here and during the corpus building for to achieve accuracy.",
+            "Export docs": "Lutherscripts Latin tokenizer will output the source to a JSON array. Export that to separate txt documents for work with tools like Voyant."
         }
 
         selected_operation = var_operation.get()
