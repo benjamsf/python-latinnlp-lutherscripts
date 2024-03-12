@@ -12,41 +12,47 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 import time
+import queue
+
 
 
 __author__ = "benjamsf"
 __license__ = "MIT"
 
-stop_flag = [False]
+# This flag and queue are used for communication between threads and updating the GUI
+stop_flag = False
+message_queue = queue.Queue()
 
 class CustomTextRedirector:
-    def __init__(self, widget):
+    def __init__(self, widget, single_line_mode=False):
         self.widget = widget
-        self.widget.configure(background='black', foreground='green')  # Set background and text color
-        self.encoding = 'utf-8'  # Set the encoding for the widget
+        self.single_line_mode = single_line_mode
+        self.widget.configure(background='black', foreground='green', font=('Arial'))
 
     def write(self, message):
-        self.widget.configure(state='normal')
-        self.widget.insert(tk.END, message.encode(self.encoding))  # Encode the message with the specified encoding
-        self.widget.see(tk.END)
-        self.widget.configure(state='disabled')
-        self.widget.update()
+        if self.widget.winfo_exists():
+            self.widget.configure(state='normal')
+            if self.single_line_mode:
+                # Replace last line
+                current_content = self.widget.get("1.0", tk.END).splitlines()
+                current_content[-1] = message.strip()  # Ensure to strip newlines for single line mode
+                new_content = "\n".join(current_content)
+                self.widget.delete("1.0", tk.END)
+                self.widget.insert("1.0", new_content)
+            else:
+                # Append new message
+                self.widget.insert(tk.END, message)
+            self.widget.see(tk.END)
+            self.widget.configure(state='disabled')
 
     def flush(self):
         pass
 
-    def readline(self):
-        return ''
-
-def create_image_label(parent, root, frames):
-    lbl_luther_image = tk.Label(parent, image=frames[0])
-    lbl_luther_image.grid(row=0, rowspan=8, column=0, padx=10, pady=10)
-
-    return lbl_luther_image
+    def set_single_line_mode(self, mode):
+        self.single_line_mode = mode
 
 
 def gui_main():
-
     root = tk.Tk()
     root.geometry("1500x640")
     root.title("Lutherscripts (Dev version) - A NLP toolset for Latin language")
@@ -130,10 +136,10 @@ def gui_main():
             "Tokenize Latin text by words": "This operation will tokenize your Latin text by words, which is required for further word-based natural language processing, using CLTK. You can manually segmentate the text via inserting a headline in a format #Detail,Otherdetail,Thirddetail# and end marker of the segment as #end#. That will be interpreted by the tokenizer as a single document, with metadata provided in the header",
             "Tokenize Latin text by sentences": "This operation will tokenize your Latin text by sentences, which is useful for sentence-based natural language processing, using CLTK. As of dev version, not in the par of the other operations.",
             "Perform KWIC analysis from your JSON word tokenized text": "This operation will perform a Key Word in Context (KWIC) analysis, allowing you to see the occurrences of a word within the context of the text, using NLTK. Source must be a Word Tokenized text in JSON format.",
-            "Perform word frequency analysis": "This operation will perform a Word Frequency Analysis, allowing you to see the number of times each word has been used in your target text, using NLTK. Source must be a Word Tokenized text in JSON format.",
+            "Perform word frequency analysis from your JSON word tokenized text": "This operation will perform a Word Frequency Analysis, allowing you to see the number of times each word has been used in your target text, using NLTK. Source must be a Word Tokenized text in JSON format.",
             "Build a dictionary and corpus from your JSON word tokenized text": "This operation will build a dictionary and a corpus from your Word Tokenized text in JSON format using GenSim, for to source further operations. As Arg 1 pass minimum appearance of a word in a document corpus to be accepted to the corpus, as Arg 2 pass the maximum in a fraction of a document to do the same.",
             "Perform Topic Modeling from your dictionary and corpus": "This operation will perform Topic Modeling using GenSim from your dictionary and corpus files. As Argument 1, pass the number of topics you want to try dig out from the text. As Argument 2, pass the number of passes to perform on the corpus. Test different values both here and during the corpus building for to achieve accuracy.",
-            "Export docs": "Lutherscripts Latin tokenizer will output the source to a JSON array. Export that to separate txt documents for work with tools like Voyant."
+            "Export the tokenized JSON to multiple txt documents": "Lutherscripts Latin tokenizer will output the source to a JSON array. Export that to separate txt documents for work with tools like Voyant."
         }
 
         selected_operation = var_operation.get()
@@ -178,6 +184,21 @@ def gui_main():
     root.grid_rowconfigure(5, weight=1)
     sys.stdout = CustomTextRedirector(txt_terminal)
     sys.stderr = CustomTextRedirector(txt_terminal)
+
+    def update_txt_terminal():
+        try:
+            while not message_queue.empty():
+                message = message_queue.get_nowait()
+                txt_terminal.configure(state='normal')
+                txt_terminal.insert(tk.END, message)
+                txt_terminal.see(tk.END)
+                txt_terminal.configure(state='disabled')
+        except queue.Empty:
+            pass  # No more messages to display
+        finally:
+            # Reschedule this function to run again after 100 ms
+            root.after(100, update_txt_terminal)
+
     
     
     def update_image_label(lbl, frames):
@@ -185,7 +206,83 @@ def gui_main():
         frames.append(frame)
         lbl.config(image=frame)
 
+    def start_async_operation():
+        """Start the async operation in a new thread."""
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(run_script_async())
+        except Exception as e:
+            print(f"An error occurred: {e}")  # Print or log the error
+        finally:
+            # Ensure these actions are performed back in the main GUI thread
+            root.after(0, finalize_operation)
 
+    def finalize_operation():
+        """Re-enable the button and stop the animation after the operation is done."""
+        global stop_flag
+        stop_flag = True  # Stop the animation
+        btn_play.configure(state='normal')  # Re-enable the button
+
+    def animate_luther():
+        global stop_flag
+        while not stop_flag:
+            update_image_label(lbl_luther_image, frames)
+            root.update()
+            time.sleep(interval)
+
+    def start_operation():
+        global stop_flag
+        stop_flag = False
+        btn_play.configure(state='disabled')
+        txt_terminal.configure(state='normal')
+        txt_terminal.delete(1.0, tk.END)  # Clear existing text
+        txt_terminal.configure(state='disabled')
+
+        # Run the async operation in a separate thread
+        threading.Thread(target=run_script_async, daemon=True).start()
+
+        # Update the GUI periodically
+        update_txt_terminal()
+        # Check the selected operation and validate arguments for KWIC analysis
+        operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
+        if operation_name == "kwic_analysis":
+            argument1 = ent_argument1.get()
+            argument2 = ent_argument2.get()
+            if not argument1 or not argument2:
+                print("Please enter both Argument1 (Keyword) and argument2 (Context length, a number of words you want to see left and right of a keyword hit) for the KWIC analysis")
+                return
+        if operation_name == "topic_modeling":
+            argument1 = ent_argument1.get()
+            argument2 = ent_argument2.get()
+            if not argument1 or not argument2:
+                print("Please enter both Argument1 (Number of Topics) and argument2 (Number of Corpus Passes during LDA Training) ")
+                return
+
+        async_thread = threading.Thread(target=start_async_operation, daemon=True)
+        async_thread.start()
+        
+        # Start the animation thread
+        stop_flag[0] = False
+        animation_thread = threading.Thread(target=animate_luther, args=(stop_flag,))
+        animation_thread.daemon = True
+        animation_thread.start()
+
+        print("Starting operation...")
+        print("Please wait, this might take couple of seconds...")
+
+        btn_play.configure(state='disabled')
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        # Call the main function with the callback function
+        loop.run_until_complete(run_script_async())
+        loop.close()
+        btn_play.configure(state='normal')
+        stop_flag[0] = True
+
+    
     async def run_script_async():
         operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
         source_path = os.path.normpath(location_raw_sourcetext)
@@ -213,24 +310,23 @@ def gui_main():
         )
 
         lbl_luther_image.config(image=gif1)
+
     
-        output = ''
+        output_buffer = ''  # Buffer to collect output
         while True:
             char = await process.stdout.read(1)
             if not char:
                 break
-            char = char.decode(errors='replace')
+            output_buffer += char.decode(errors='replace')
 
-            if char == '\r':
-                txt_terminal.configure(state='normal')
-                txt_terminal.delete(f'{tk.END} -2c linestart', tk.END)
-                txt_terminal.insert(tk.END, output)
-                txt_terminal.see(tk.END)
-                txt_terminal.configure(state='disabled')
-                txt_terminal.update()
-                output = ''
-            else:
-                output += char
+            if '\n' in output_buffer or '\r' in output_buffer:
+                # Put the buffer into the queue and reset it
+                message_queue.put(output_buffer)
+                output_buffer = ''
+        # Ensure any remaining output is sent to the queue
+        if output_buffer:
+            message_queue.put(output_buffer)
+
 
         stderr_data = await process.stderr.read()
         if stderr_data:
@@ -239,49 +335,6 @@ def gui_main():
             txt_terminal.see(tk.END)
             txt_terminal.configure(state='disabled')
             txt_terminal.update()
-
-    def animate_luther(stop_flag):
-        while not stop_flag[0]:
-            update_image_label(lbl_luther_image, frames)
-            root.update()
-            time.sleep(interval)
-
-
-    def start_operation():
-        # Check the selected operation and validate arguments for KWIC analysis
-        operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
-        if operation_name == "kwic_analysis":
-            argument1 = ent_argument1.get()
-            argument2 = ent_argument2.get()
-            if not argument1 or not argument2:
-                print("Please enter both Argument1 (Keyword) and argument2 (Context length, a number of words you want to see left and right of a keyword hit) for the KWIC analysis")
-                return
-        if operation_name == "topic_modeling":
-            argument1 = ent_argument1.get()
-            argument2 = ent_argument2.get()
-            if not argument1 or not argument2:
-                print("Please enter both Argument1 (Number of Topics) and argument2 (Number of Corpus Passes during LDA Training) ")
-                return
-
-        # Start the animation thread
-        stop_flag[0] = False
-        animation_thread = threading.Thread(target=animate_luther, args=(stop_flag,))
-        animation_thread.daemon = True
-        animation_thread.start()
-
-        print("Starting operation...")
-        print("Please wait, this might take couple of seconds...")
-
-        btn_play.configure(state='disabled')
-
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-        # Call the main function with the callback function
-        loop.run_until_complete(run_script_async())
-        loop.close()
-        btn_play.configure(state='normal')
-        stop_flag[0] = True
         
     # Start Operation! button
     btn_play = tk.Button(root, text="Start Operation!", command=start_operation)
@@ -296,6 +349,8 @@ def gui_main():
 
     sys.stdout = CustomTextRedirector(txt_terminal)
     sys.stderr = CustomTextRedirector(txt_terminal)
+
+    update_txt_terminal()  # Start checking the queue
 
     # Start the GUI
     root.mainloop()

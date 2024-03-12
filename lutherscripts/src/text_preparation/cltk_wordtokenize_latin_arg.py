@@ -12,68 +12,51 @@ from cltk.lemmatize.lat import LatinBackoffLemmatizer
 import re
 
 def main(source_path, destination_path, progress_callback=None):
-
     logging.basicConfig(level=logging.INFO)
-    # Instantiate a Latin-specific NLP object
     cltk_nlp = NLP(language="lat")
-
-    # Instantiate a Latin-specific lemmatizer
     latin_lemmatizer = LatinBackoffLemmatizer()
 
     input_file = os.path.abspath(source_path)
 
-    # Load the Latin text from the source file
     with open(input_file, 'r', encoding='utf-8') as f:
         input_text = f.read()
 
-    # Split the input text into documents
     input_documents = re.split(r'(?<=#end#)', input_text, flags=re.IGNORECASE)
 
     document_tokens = []
 
-    for document in input_documents:
+    for document in tqdm(input_documents, desc="Processing documents", unit="document", file=sys.stdout):
         if not document.strip():
             continue
 
-        # Extract metadata from the document
-        metadata = re.search(r'#(.*?)#', document).group(1)
+        metadata_match = re.search(r'#(.*?)#', document)
+        metadata = metadata_match.group(1) if metadata_match else ""
+        document_text = re.sub(r'#.*?#', '', document)
+        document_text = document_text.lower()
+        document_text = re.sub(r'[^\w\s]', '', document_text)
 
-        # Remove metadata from the document
-        document = re.sub(r'#.*?#', '', document)
-
-        # Convert the document text to lowercase
-        document = document.lower()
-
-        # Remove punctuation marks, digits, and special characters from the document
-        document_no_punctuation = re.sub(r'[^\w\s]', '', document)
-
-        # Find all numerals that are not within metadata and remove them
-        num_pattern = r'(?<!#metadata.*?)(\d+)(?!.*?#end#)'
-        document_no_numerals = re.sub(num_pattern, '', document_no_punctuation)
-
-        # Split the document into smaller chunks
-        text_chunks = document_no_numerals.split()
-
-        # Process the text_chunks with cltk_nlp and update the progress bar
         word_tokens = []
-        for chunk in tqdm(text_chunks, desc=f"Tokenizing words for document: {metadata}", file=sys.stdout):
-            doc = cltk_nlp(chunk)
-            for word in doc.words:
-                lemma = latin_lemmatizer.lemmatize([word.string])[0][1].lower()
-                if lemma not in LATIN_STOPS and lemma not in EXTRA_STOPS and len(lemma) > 2:
-                    word_tokens.append(lemma)
+        # Process each word in the document_text
+        words = document_text.split()
+        for word in tqdm(words, desc=f"Tokenizing {metadata}", unit="token", leave=False, file=sys.stdout):
+            cleaned_word = re.sub(r'\d+', '', word)
+            if not cleaned_word:
+                continue
+            
+            doc = cltk_nlp(cleaned_word)
+            for processed_word in doc.words:
+                lemma = latin_lemmatizer.lemmatize([processed_word.string])[0][1].lower()
+                cleaned_lemma = re.sub(r'\d+', '', lemma)
+                if cleaned_lemma and cleaned_lemma not in LATIN_STOPS and cleaned_lemma not in EXTRA_STOPS and len(cleaned_lemma) > 1:
+                    word_tokens.append(cleaned_lemma)
 
         document_tokens.append({"metadata": metadata, "tokens": word_tokens})
 
-    # Save the tokenized output to a JSON file
     output_file = os.path.abspath(destination_path)
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(document_tokens, f, ensure_ascii=False)
 
-    # Print a message to confirm that the file has been saved
     print(f'The tokenized output has been saved as {destination_path}')
 
-
-
-
-
+if __name__ == '__main__':
+    main('source.json', 'destination.json')
