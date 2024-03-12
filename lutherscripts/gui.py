@@ -20,37 +20,23 @@ __author__ = "benjamsf"
 __license__ = "MIT"
 
 # This flag and queue are used for communication between threads and updating the GUI
-stop_flag = False
+stop_flag = [False]
 message_queue = queue.Queue()
 
 class CustomTextRedirector:
-    def __init__(self, widget, single_line_mode=False):
+    def __init__(self, widget):
         self.widget = widget
-        self.single_line_mode = single_line_mode
-        self.widget.configure(background='black', foreground='green', font=('Arial'))
+        self.widget.configure(background='black', foreground='green', font=('Arial', 12))
 
     def write(self, message):
         if self.widget.winfo_exists():
             self.widget.configure(state='normal')
-            if self.single_line_mode:
-                # Replace last line
-                current_content = self.widget.get("1.0", tk.END).splitlines()
-                current_content[-1] = message.strip()  # Ensure to strip newlines for single line mode
-                new_content = "\n".join(current_content)
-                self.widget.delete("1.0", tk.END)
-                self.widget.insert("1.0", new_content)
-            else:
-                # Append new message
-                self.widget.insert(tk.END, message)
+            self.widget.insert(tk.END, message)
             self.widget.see(tk.END)
             self.widget.configure(state='disabled')
 
     def flush(self):
-        pass
-
-    def set_single_line_mode(self, mode):
-        self.single_line_mode = mode
-
+        pass  # Nothing to do here for now
 
 def gui_main():
     root = tk.Tk()
@@ -206,83 +192,54 @@ def gui_main():
         frames.append(frame)
         lbl.config(image=frame)
 
-    def start_async_operation():
-        """Start the async operation in a new thread."""
-        try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(run_script_async())
-        except Exception as e:
-            print(f"An error occurred: {e}")  # Print or log the error
-        finally:
-            # Ensure these actions are performed back in the main GUI thread
-            root.after(0, finalize_operation)
-
     def finalize_operation():
         """Re-enable the button and stop the animation after the operation is done."""
-        global stop_flag
-        stop_flag = True  # Stop the animation
         btn_play.configure(state='normal')  # Re-enable the button
+        stop_flag[0] = True
 
-    def animate_luther():
-        global stop_flag
-        while not stop_flag:
+    def animate_luther(stop_flag):
+        while not stop_flag[0]:
             update_image_label(lbl_luther_image, frames)
             root.update()
             time.sleep(interval)
 
     def start_operation():
-        global stop_flag
-        stop_flag = False
         btn_play.configure(state='disabled')
         txt_terminal.configure(state='normal')
         txt_terminal.delete(1.0, tk.END)  # Clear existing text
         txt_terminal.configure(state='disabled')
+        print("Starting the requested operation...")
 
         # Run the async operation in a separate thread
-        threading.Thread(target=run_script_async, daemon=True).start()
+        threading.Thread(target=start_async_operation, daemon=True).start()
 
         # Update the GUI periodically
         update_txt_terminal()
-        # Check the selected operation and validate arguments for KWIC analysis
-        operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
-        if operation_name == "kwic_analysis":
-            argument1 = ent_argument1.get()
-            argument2 = ent_argument2.get()
-            if not argument1 or not argument2:
-                print("Please enter both Argument1 (Keyword) and argument2 (Context length, a number of words you want to see left and right of a keyword hit) for the KWIC analysis")
-                return
-        if operation_name == "topic_modeling":
-            argument1 = ent_argument1.get()
-            argument2 = ent_argument2.get()
-            if not argument1 or not argument2:
-                print("Please enter both Argument1 (Number of Topics) and argument2 (Number of Corpus Passes during LDA Training) ")
-                return
 
-        async_thread = threading.Thread(target=start_async_operation, daemon=True)
-        async_thread.start()
-        
         # Start the animation thread
         stop_flag[0] = False
         animation_thread = threading.Thread(target=animate_luther, args=(stop_flag,))
         animation_thread.daemon = True
         animation_thread.start()
 
-        print("Starting operation...")
-        print("Please wait, this might take couple of seconds...")
+    def start_async_operation():
+        """Start the async operation in a new thread."""
+        def run_in_background():
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(run_script_async())
+                loop.close()
+            except Exception as e:
+                print(f"An error occurred: {e}")
+            finally:
+                root.after(0, finalize_operation)
 
-        btn_play.configure(state='disabled')
+        global stop_flag  # Use the existing stop_flag list
+        stop_flag[0] = False  # Update the value in the list
+        threading.Thread(target=run_in_background, daemon=True).start()
 
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
 
-        # Call the main function with the callback function
-        loop.run_until_complete(run_script_async())
-        loop.close()
-        btn_play.configure(state='normal')
-        stop_flag[0] = True
-
-    
     async def run_script_async():
         operation_name = [option[0] for option in options if option[1] == var_operation.get()][0]
         source_path = os.path.normpath(location_raw_sourcetext)
@@ -335,6 +292,8 @@ def gui_main():
             txt_terminal.see(tk.END)
             txt_terminal.configure(state='disabled')
             txt_terminal.update()
+        
+        print("Operation finished.")
         
     # Start Operation! button
     btn_play = tk.Button(root, text="Start Operation!", command=start_operation)
