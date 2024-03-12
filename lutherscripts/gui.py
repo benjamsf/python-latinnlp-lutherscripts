@@ -114,7 +114,8 @@ def gui_main():
         ("freq_analysis", "Perform word frequency analysis from your JSON word tokenized text"),    
         ("build_corpus", "Build a dictionary and corpus from your JSON word tokenized text"),
         ("topic_modeling", "Perform Topic Modeling from your dictionary and corpus"),
-        ("export_docs", "Export the tokenized JSON to multiple txt documents")
+        ("export_docs", "Export the tokenized JSON to multiple txt documents"),
+        ("export_prepared_text", "Export Lutherscripts prepared txt to multiple txt documents")
         ]
 
     def update_explanation(*args):
@@ -125,7 +126,8 @@ def gui_main():
             "Perform word frequency analysis from your JSON word tokenized text": "This operation will perform a Word Frequency Analysis, allowing you to see the number of times each word has been used in your target text, using NLTK. Source must be a Word Tokenized text in JSON format.",
             "Build a dictionary and corpus from your JSON word tokenized text": "This operation will build a dictionary and a corpus from your Word Tokenized text in JSON format using GenSim, for to source further operations. As Arg 1 pass minimum appearance of a word in a document corpus to be accepted to the corpus, as Arg 2 pass the maximum in a fraction of a document to do the same.",
             "Perform Topic Modeling from your dictionary and corpus": "This operation will perform Topic Modeling using GenSim from your dictionary and corpus files. As Argument 1, pass the number of topics you want to try dig out from the text. As Argument 2, pass the number of passes to perform on the corpus. Test different values both here and during the corpus building for to achieve accuracy.",
-            "Export the tokenized JSON to multiple txt documents": "Lutherscripts Latin tokenizer will output the source to a JSON array. Export that to separate txt documents for work with tools like Voyant."
+            "Export the tokenized JSON to multiple txt documents": "Lutherscripts Latin tokenizer will output the source to a JSON array. Export that to separate txt documents for work with tools like Voyant.",
+            "Export Lutherscripts prepared txt to multiple txt documents": "Export Lutherscripts prepared text to multiple txt documents. Text prepared by Lutherscripts remove clutter from Luther's Werke im WWW / other raw text sources, and enables you to separate it to documents in a way that Lutherscripts understands. Now export the text to multiple txt files based on that markup, in order to use them in 3rd party tools like VoyantTools."
         }
 
         selected_operation = var_operation.get()
